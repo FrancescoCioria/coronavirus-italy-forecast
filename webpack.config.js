@@ -5,7 +5,8 @@ module.exports = {
   devtool: "inline-source-map",
   entry: "./src/app.ts",
   output: {
-    filename: "bundle.js"
+    filename: "bundle.js",
+    path: __dirname
   },
   devServer: {
     contentBase: path.join(__dirname, "dist"),

@@ -1,6 +1,24 @@
 import axios from "axios";
 
-export type CoronavirusData = {
+export type Data = {
+  date: string;
+  value: number;
+};
+
+export type CoronavirusDataFR = {
+  PaysData: Array<{
+    Date: string;
+    Pays: "France" | "Espagne";
+    Infection: number;
+    Deces: number;
+    Guerisons: number;
+    TauxDeces: number;
+    TauxGuerison: number;
+    TauxInfection: number;
+  }>;
+};
+
+export type CoronavirusDataITA = {
   ricoverati_con_sintomi: number;
   terapia_intensiva: number;
   totale_ospedalizzati: number;
@@ -13,45 +31,51 @@ export type CoronavirusData = {
   tamponi: number;
 };
 
-export type CoronavirusNationalData = CoronavirusData & {
+export type CoronavirusNationalDataITA = CoronavirusDataITA & {
   data: string;
   stato: "ITA";
 };
 
-export type CoronavirusRegionalData = CoronavirusNationalData & {
+export type CoronavirusRegionalDataITA = CoronavirusNationalDataITA & {
   codice_regione: number;
   denominazione_regione: "Lombardia" | "Emilia Romagna" | "Veneto";
   lat: number;
   long: number;
 };
 
-export const getRegionalData = (): Promise<CoronavirusRegionalData[]> =>
+export const getRegionalData = (): Promise<Array<
+  Data & { region: CoronavirusRegionalDataITA["denominazione_regione"] }
+>> =>
   axios
-    .get(
+    .get<CoronavirusRegionalDataITA[]>(
       "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni.json"
     )
-    .then(res => res.data);
+    .then(res =>
+      res.data.map(d => ({
+        date: d.data,
+        value: d.deceduti,
+        region: d.denominazione_regione
+      }))
+    );
 
-export const getNationalData = (): Promise<CoronavirusNationalData[]> =>
+export const getItalianData = (): Promise<Data[]> =>
   axios
-    .get(
+    .get<CoronavirusNationalDataITA[]>(
       "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-andamento-nazionale.json"
     )
-    .then(res => res.data);
+    .then(res => res.data.map(d => ({ date: d.data, value: d.deceduti })));
 
-export const getLastNationalData = (
-  nationalData: CoronavirusNationalData[]
-): CoronavirusData => {
-  return nationalData[nationalData.length - 1];
-};
-
-export const getLastRegionalData = (
-  regionalData: CoronavirusRegionalData[],
-  region: CoronavirusRegionalData["denominazione_regione"]
-): CoronavirusData => {
-  const filteredRegionalData = regionalData.filter(
-    d => d.denominazione_regione === region
-  );
-
-  return filteredRegionalData[filteredRegionalData.length - 1];
-};
+export const getGlobalData = (): Promise<Array<
+  Data & { country: "France" | "Espagne" }
+>> =>
+  axios
+    .get<CoronavirusDataFR>(
+      "https://coronavirus.politologue.com/data/coronavirus/coronacsv.aspx?format=json"
+    )
+    .then(res =>
+      res.data.PaysData.map(d => ({
+        date: d.Date,
+        value: d.Deces,
+        country: d.Pays
+      }))
+    );

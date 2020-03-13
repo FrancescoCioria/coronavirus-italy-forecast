@@ -1,6 +1,6 @@
 import * as regression from "regression";
 import * as Chart from "chart.js";
-import { getNationalData, getRegionalData } from "./data";
+import { getGlobalData, getRegionalData, getItalianData, Data } from "./data";
 
 Chart.defaults.global.animation!.duration = 0;
 
@@ -17,15 +17,12 @@ sliderElement.setAttribute("min", "1");
 const getForecast = () => parseInt(forecastElement.value);
 const getXPrediction = () => parseInt(sliderElement.value);
 
-const createGraph = (data: Array<{ data: string; deceduti: number }>) => {
-  const points: regression.DataPoint[] = data.map((d, i) => [
-    i + 1,
-    d.deceduti
-  ]);
+const createGraph = (data: Array<Data>) => {
+  const points: regression.DataPoint[] = data.map((d, i) => [i + 1, d.value]);
 
   const getLabels = () => {
     return [...new Array(points.length + getForecast())].map((_, i) => {
-      const firstDate = new Date(data[0].data.slice(0, 10));
+      const firstDate = new Date(data[0].date.slice(0, 10));
       firstDate.setDate(firstDate.getDate() + i);
 
       const currentDate = firstDate;
@@ -157,30 +154,29 @@ const createGraph = (data: Array<{ data: string; deceduti: number }>) => {
 };
 
 const main = async () => {
-  const _nationalData = await getNationalData();
+  const _italianData = await getItalianData();
   const regionalData = await getRegionalData();
+  const globalData = await getGlobalData();
 
   const firstThreeDays = [
     {
-      data: "2020-02-21 18:00:00",
-      deceduti: 1
+      date: "2020-02-21 18:00:00",
+      value: 1
     },
     {
-      data: "2020-02-22 18:00:00",
-      deceduti: 2
+      date: "2020-02-22 18:00:00",
+      value: 2
     },
     {
-      data: "2020-02-23 18:00:00",
-      deceduti: 3
+      date: "2020-02-23 18:00:00",
+      value: 3
     }
   ];
 
-  const nationalData: Array<{ data: string; deceduti: number }> = [
+  const italianData: Array<{ date: string; value: number }> = [
     ...firstThreeDays,
-    ..._nationalData
+    ..._italianData
   ];
-
-  sliderElement.setAttribute("value", String(nationalData.length));
 
   let chart: Chart | null = null;
 
@@ -190,21 +186,25 @@ const main = async () => {
     const data = (() => {
       switch (filterElement.value) {
         case "italy":
-          return nationalData;
+          return italianData;
+        case "france":
+          return globalData.filter(d => d.country === "France" && d.value > 0);
+        case "spain":
+          return globalData.filter(d => d.country === "Espagne" && d.value > 0);
         case "lombardy":
-          return regionalData.filter(
-            d => d.denominazione_regione === "Lombardia"
-          );
-
+          return regionalData.filter(d => d.region === "Lombardia");
         case "emilia-romagna":
           return regionalData.filter(
-            d => d.codice_regione === 8 && d.deceduti > 0
+            d => d.region === "Emilia Romagna" && d.value > 0
           );
         case "veneto":
-          return regionalData.filter(d => d.denominazione_regione === "Veneto");
+          return regionalData.filter(d => d.region === "Veneto" && d.value > 0);
       }
     })()!;
 
+    console.log(globalData);
+
+    sliderElement.setAttribute("value", String(data.length));
     sliderElement.setAttribute("max", String(data.length));
 
     if (getXPrediction() > data.length) {

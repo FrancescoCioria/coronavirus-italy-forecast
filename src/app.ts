@@ -1,6 +1,6 @@
 import * as regression from "regression";
 import * as Chart from "chart.js";
-import { getGlobalData, getRegionalData, getItalianData, Data } from "./data";
+import { getData, Data } from "./data";
 
 Chart.defaults.global.animation!.duration = 0;
 
@@ -154,9 +154,7 @@ const createGraph = (data: Array<Data>) => {
 };
 
 const main = async () => {
-  const _italianData = await getItalianData();
-  const regionalData = await getRegionalData();
-  const globalData = await getGlobalData();
+  const data = await getData();
 
   const firstThreeDays = [
     {
@@ -175,7 +173,7 @@ const main = async () => {
 
   const italianData: Array<{ date: string; value: number }> = [
     ...firstThreeDays,
-    ..._italianData
+    ...data.italianData
   ];
 
   let chart: Chart | null = null;
@@ -183,38 +181,42 @@ const main = async () => {
   const updateChart = () => {
     chart && chart.destroy();
 
-    const data = (() => {
+    const filteredData = (() => {
       switch (filterElement.value) {
         case "italy":
           return italianData;
         case "france":
-          return globalData.filter(d => d.country === "France" && d.value > 0);
+          return data.globalData.filter(
+            d => d.country === "France" && d.value > 0
+          );
         case "spain":
-          return globalData.filter(d => d.country === "Espagne" && d.value > 0);
+          return data.globalData.filter(
+            d => d.country === "Espagne" && d.value > 0
+          );
         case "lombardy":
-          return regionalData.filter(d => d.region === "Lombardia");
+          return data.regionalData.filter(d => d.region === "Lombardia");
         case "emilia-romagna":
-          return regionalData.filter(
+          return data.regionalData.filter(
             d => d.region === "Emilia Romagna" && d.value > 0
           );
         case "veneto":
-          return regionalData.filter(d => d.region === "Veneto" && d.value > 0);
+          return data.regionalData.filter(
+            d => d.region === "Veneto" && d.value > 0
+          );
       }
     })()!;
 
-    console.log(globalData);
+    sliderElement.setAttribute("value", String(filteredData.length));
+    sliderElement.setAttribute("max", String(filteredData.length));
 
-    sliderElement.setAttribute("value", String(data.length));
-    sliderElement.setAttribute("max", String(data.length));
-
-    if (getXPrediction() > data.length) {
-      sliderElement.setAttribute("value", String(data.length));
+    if (getXPrediction() > filteredData.length) {
+      sliderElement.setAttribute("value", String(filteredData.length));
     }
 
     sliderElement.style.width = `${78.9 *
-      (data.length / (data.length + getForecast()))}%`;
+      (filteredData.length / (filteredData.length + getForecast()))}%`;
 
-    chart = createGraph(data);
+    chart = createGraph(filteredData);
   };
 
   sliderElement.addEventListener("input", updateChart);

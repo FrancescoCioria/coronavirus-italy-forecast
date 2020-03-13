@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as express from "express";
+import * as cors from "cors";
 
 export type Data = {
   date: string;
@@ -82,6 +83,8 @@ export const getGlobalData = (): Promise<Array<
     );
 
 const app = express();
+
+app.use(cors());
 
 app.get("/", async (_, res) => {
   const _italianData = await getItalianData();

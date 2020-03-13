@@ -1,6 +1,7 @@
 import axios from "axios";
 import * as express from "express";
 import * as cors from "cors";
+import sortBy = require("lodash/sortBy");
 
 export type Data = {
   date: string;
@@ -80,7 +81,8 @@ export const getGlobalData = (): Promise<Array<
         value: d.Deces,
         country: d.Pays
       }))
-    );
+    )
+    .then(data => sortBy(data, "date"));
 
 const app = express();
 

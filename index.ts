@@ -82,7 +82,6 @@ export const getGlobalData = (): Promise<Array<
     );
 
 const app = express();
-const port = 3000;
 
 app.get("/", async (_, res) => {
   const _italianData = await getItalianData();
@@ -113,4 +112,4 @@ app.get("/", async (_, res) => {
   });
 });
 
-app.listen(port, () => console.log(`Listening on port ${port}!`));
+app.listen(process.env.PORT || 8081);

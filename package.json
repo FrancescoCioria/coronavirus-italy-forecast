@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node index.ts --files tsconfig.json",
+    "start": "ts-node --files --project tsconfig.json index.ts",
     "deploy": "git push heroku server:master"
   },
   "dependencies": {

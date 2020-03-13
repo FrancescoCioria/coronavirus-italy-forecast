@@ -3,6 +3,7 @@
   margin-left: 10px;
 }
 
-#slider {
+#slider,
+#forecast-wrapper {
   margin-left: 40px;
 }

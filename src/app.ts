@@ -2,56 +2,29 @@ import * as regression from "regression";
 import * as Chart from "chart.js";
 import { getNationalData } from "./data";
 
-const FORECAST = 3;
 Chart.defaults.global.animation!.duration = 0;
 
-const main = async () => {
-  const nationalData = await getNationalData();
+const chartElement = document.getElementById("chart") as HTMLCanvasElement;
+const ctx = chartElement.getContext("2d")!;
 
-  const firstThreeDays = [
-    {
-      data: "2020-02-21 18:00:00",
-      deceduti: 1
-    },
-    {
-      data: "2020-02-22 18:00:00",
-      deceduti: 2
-    },
-    {
-      data: "2020-02-23 18:00:00",
-      deceduti: 3
-    }
-  ];
+const forecastElement = document.getElementById("forecast") as HTMLInputElement;
+const sliderElement = document.getElementById("slider") as HTMLInputElement;
 
-  const data: Array<{ data: string; deceduti: number }> = [
-    ...firstThreeDays,
-    ...nationalData
-  ];
+forecastElement.value = String(3);
+sliderElement.setAttribute("min", "1");
 
+const getForecast = () => parseInt(forecastElement.value);
+const getXPrediction = () => parseInt(sliderElement.value);
+
+const createGraph = (data: Array<{ data: string; deceduti: number }>) => {
   const points: regression.DataPoint[] = data.map((d, i) => [
     i + 1,
     d.deceduti
   ]);
 
-  // slider
-  const sliderElement = document.getElementById("slider") as HTMLInputElement;
-  sliderElement.setAttribute("min", "1");
-  sliderElement.setAttribute("max", String(points.length));
-  sliderElement.setAttribute("value", String(points.length));
-  sliderElement.value = String(data.length);
-  (sliderElement.style.width as any) = `${86.5 *
-    (points.length / (points.length + FORECAST))}%`;
-
-  const getXPrediction = () => parseInt(sliderElement.value);
-  const getForecast = () => points.length - getXPrediction() + FORECAST;
-
-  // chart.js
-  const chartElement = document.getElementById("chart") as HTMLCanvasElement;
-  const ctx = chartElement.getContext("2d")!;
-
   const getLabels = () => {
-    return [...new Array(points.length + FORECAST)].map((_, i) => {
-      const firstDate = new Date(firstThreeDays[0].data.slice(0, 10));
+    return [...new Array(points.length + getForecast())].map((_, i) => {
+      const firstDate = new Date(data[0].data.slice(0, 10));
       firstDate.setDate(firstDate.getDate() + i);
 
       const currentDate = firstDate;
@@ -89,13 +62,16 @@ const main = async () => {
       );
     };
 
+    const getForecastRegressionLength = () =>
+      points.length - getXPrediction() + getForecast();
+
     return [
       {
         label: "Dati reali",
         backgroundColor: "transparent",
         borderColor: "#505050",
         pointRadius: 1,
-        yAxis: "y-axis",
+        // yAxis: "y-axis",
         data: points.map(chartDataFromPoints)
       },
       // {
@@ -113,10 +89,10 @@ const main = async () => {
         borderDash: [10, 5],
         borderWidth: 2,
         pointRadius: 1,
-        yAxis: "y-axis",
+        // yAxis: "y-axis",
         data: [
           exponential.points[getXPrediction() - 1],
-          ...getProjection(exponential, getForecast())
+          ...getProjection(exponential, getForecastRegressionLength())
         ].map(chartDataFromPoints)
       },
       {
@@ -128,7 +104,7 @@ const main = async () => {
         pointRadius: 1,
         data: [
           cubic.points[getXPrediction() - 1],
-          ...getProjection(cubic, getForecast())
+          ...getProjection(cubic, getForecastRegressionLength())
         ].map(chartDataFromPoints)
       },
       {
@@ -140,14 +116,15 @@ const main = async () => {
         pointRadius: 1,
         data: [
           quadratic.points[getXPrediction() - 1],
-          ...getProjection(quadratic, getForecast())
+          ...getProjection(quadratic, getForecastRegressionLength())
         ].map(chartDataFromPoints)
       }
     ].reverse();
   };
 
   const yAxisMax =
-    regression.exponential(points).predict(points.length + FORECAST)[1] * 2;
+    regression.exponential(points).predict(points.length + getForecast())[1] *
+    1.5;
 
   const chart = new Chart(ctx, {
     // The type of chart we want to create
@@ -180,12 +157,55 @@ const main = async () => {
     }
   });
 
+  return chart;
+};
+
+const main = async () => {
+  const nationalData = await getNationalData();
+
+  const firstThreeDays = [
+    {
+      data: "2020-02-21 18:00:00",
+      deceduti: 1
+    },
+    {
+      data: "2020-02-22 18:00:00",
+      deceduti: 2
+    },
+    {
+      data: "2020-02-23 18:00:00",
+      deceduti: 3
+    }
+  ];
+
+  const data: Array<{ data: string; deceduti: number }> = [
+    ...firstThreeDays,
+    ...nationalData
+  ];
+
+  sliderElement.setAttribute("max", String(data.length));
+  sliderElement.setAttribute("value", String(data.length));
+  (sliderElement.style.width as any) = `${86.5 *
+    (data.length / (data.length + getForecast()))}%`;
+
+  let chart: Chart | null = null;
+
   const updateChart = () => {
-    chart.data.datasets = getChartDatasets();
-    chart.update();
+    chart && chart.destroy();
+    chart = createGraph(data);
   };
 
   sliderElement.addEventListener("input", updateChart);
+  forecastElement.addEventListener("change", () => {
+    console.log("forecast change");
+
+    (sliderElement.style.width as any) = `${86.5 *
+      (data.length / (data.length + getForecast()))}%`;
+
+    updateChart();
+  });
+
+  updateChart();
 };
 
 main();

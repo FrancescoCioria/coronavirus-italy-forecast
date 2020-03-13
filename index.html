@@ -2,11 +2,27 @@
   <link rel="stylesheet" href="main.css" />
 </head>
 <body>
-  <canvas id="chart"></canvas>
-  <input type="range" class="slider" id="slider" />
-  <div id="forecast-wrapper">
-    <label>Nº giorni previsti: </label
-    ><input type="number" min="0" id="forecast" />
+  <div id="chart-wrapper">
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div id="inputs-wrapper">
+    <input type="range" class="slider" id="slider" />
+
+    <div id="forecast-wrapper" style="margin-top: 20px">
+      <div>Nº giorni previsti:</div>
+      <input type="number" min="0" id="forecast" style="margin-top: 5px" />
+    </div>
+
+    <div style="margin-top: 20px">
+      <div>Filtra i dati per:</div>
+      <select id="filter" style="margin-top: 5px">
+        <option value="italy">Tutta Italia</option>
+        <option value="lombardy">Lombardia</option>
+        <option value="emilia-romagna">Emilia Romagna</option>
+        <option value="veneto">Veneto</option>
+      </select>
+    </div>
   </div>
 
   <script src="bundle.js"></script>

@@ -1,6 +1,6 @@
 import * as regression from "regression";
 import * as Chart from "chart.js";
-import { getNationalData } from "./data";
+import { getNationalData, getRegionalData } from "./data";
 
 Chart.defaults.global.animation!.duration = 0;
 
@@ -9,6 +9,7 @@ const ctx = chartElement.getContext("2d")!;
 
 const forecastElement = document.getElementById("forecast") as HTMLInputElement;
 const sliderElement = document.getElementById("slider") as HTMLInputElement;
+const filterElement = document.getElementById("filter") as HTMLInputElement;
 
 forecastElement.value = String(3);
 sliderElement.setAttribute("min", "1");
@@ -67,21 +68,12 @@ const createGraph = (data: Array<{ data: string; deceduti: number }>) => {
 
     return [
       {
-        label: "Dati reali",
+        label: "Nº morti ufficiale",
         backgroundColor: "transparent",
         borderColor: "#505050",
         pointRadius: 1,
-        // yAxis: "y-axis",
         data: points.map(chartDataFromPoints)
       },
-      // {
-      //   label: "Approssimazione curva esponenziale",
-      //   backgroundColor: "transparent",
-      //   borderColor: "rgb(255, 99, 132)",
-      //   data: exponential.points
-      //     .slice(0, getXPrediction())
-      //     .map(chartDataFromPoints)
-      // },
       {
         label: "Esponenziale",
         backgroundColor: "transparent",
@@ -89,7 +81,6 @@ const createGraph = (data: Array<{ data: string; deceduti: number }>) => {
         borderDash: [10, 5],
         borderWidth: 2,
         pointRadius: 1,
-        // yAxis: "y-axis",
         data: [
           exponential.points[getXPrediction() - 1],
           ...getProjection(exponential, getForecastRegressionLength())
@@ -148,7 +139,12 @@ const createGraph = (data: Array<{ data: string; deceduti: number }>) => {
             id: "y-axis",
             type: "linear",
             ticks: {
-              max: Math.floor(yAxisMax / 500) * 500,
+              max:
+                yAxisMax < 200
+                  ? Math.floor(yAxisMax / 20) * 20
+                  : yAxisMax < 1000
+                  ? Math.floor(yAxisMax / 50) * 50
+                  : Math.floor(yAxisMax / 500) * 500,
               min: 0
             }
           }
@@ -161,7 +157,8 @@ const createGraph = (data: Array<{ data: string; deceduti: number }>) => {
 };
 
 const main = async () => {
-  const nationalData = await getNationalData();
+  const _nationalData = await getNationalData();
+  const regionalData = await getRegionalData();
 
   const firstThreeDays = [
     {
@@ -178,32 +175,51 @@ const main = async () => {
     }
   ];
 
-  const data: Array<{ data: string; deceduti: number }> = [
+  const nationalData: Array<{ data: string; deceduti: number }> = [
     ...firstThreeDays,
-    ...nationalData
+    ..._nationalData
   ];
 
-  sliderElement.setAttribute("max", String(data.length));
-  sliderElement.setAttribute("value", String(data.length));
-  (sliderElement.style.width as any) = `${86.5 *
-    (data.length / (data.length + getForecast()))}%`;
+  sliderElement.setAttribute("value", String(nationalData.length));
 
   let chart: Chart | null = null;
 
   const updateChart = () => {
     chart && chart.destroy();
+
+    const data = (() => {
+      switch (filterElement.value) {
+        case "italy":
+          return nationalData;
+        case "lombardy":
+          return regionalData.filter(
+            d => d.denominazione_regione === "Lombardia"
+          );
+
+        case "emilia-romagna":
+          return regionalData.filter(
+            d => d.codice_regione === 8 && d.deceduti > 0
+          );
+        case "veneto":
+          return regionalData.filter(d => d.denominazione_regione === "Veneto");
+      }
+    })()!;
+
+    sliderElement.setAttribute("max", String(data.length));
+
+    if (getXPrediction() > data.length) {
+      sliderElement.setAttribute("value", String(data.length));
+    }
+
+    sliderElement.style.width = `${78.9 *
+      (data.length / (data.length + getForecast()))}%`;
+
     chart = createGraph(data);
   };
 
   sliderElement.addEventListener("input", updateChart);
-  forecastElement.addEventListener("change", () => {
-    console.log("forecast change");
-
-    (sliderElement.style.width as any) = `${86.5 *
-      (data.length / (data.length + getForecast()))}%`;
-
-    updateChart();
-  });
+  filterElement.addEventListener("change", updateChart);
+  forecastElement.addEventListener("change", updateChart);
 
   updateChart();
 };

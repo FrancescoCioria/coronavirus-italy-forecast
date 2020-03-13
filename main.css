@@ -1,9 +1,9 @@
-#chart {
-  width: 90% !important;
+#chart-wrapper {
+  width: 80%;
+  /* max-height: 90%; */
   margin-left: 10px;
 }
 
-#slider,
-#forecast-wrapper {
-  margin-left: 40px;
+#inputs-wrapper {
+  margin-left: 43px;
 }

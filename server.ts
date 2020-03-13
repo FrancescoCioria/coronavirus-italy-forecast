@@ -1,4 +1,5 @@
 import axios from "axios";
+import * as express from "express";
 
 export type Data = {
   date: string;
@@ -79,3 +80,37 @@ export const getGlobalData = (): Promise<Array<
         country: d.Pays
       }))
     );
+
+const app = express();
+const port = 3000;
+
+app.get("/", async (_, res) => {
+  const _italianData = await getItalianData();
+  const regionalData = await getRegionalData();
+  const globalData = await getGlobalData();
+
+  const firstThreeDays = [
+    {
+      date: "2020-02-21 18:00:00",
+      value: 1
+    },
+    {
+      date: "2020-02-22 18:00:00",
+      value: 2
+    },
+    {
+      date: "2020-02-23 18:00:00",
+      value: 3
+    }
+  ];
+
+  const italianData: Array<Data> = [...firstThreeDays, ..._italianData];
+
+  res.json({
+    italianData,
+    regionalData,
+    globalData
+  });
+});
+
+app.listen(port, () => console.log(`Listening on port ${port}!`));

@@ -187,7 +187,10 @@ const main = async () => {
           return italianData;
         case "france":
           return data.globalData.filter(
-            d => d.country === "France" && d.value > 0
+            d =>
+              d.country === "France" &&
+              d.value > 0 &&
+              d.date > "2020-02-28T00:00:00"
           );
         case "spain":
           return data.globalData.filter(

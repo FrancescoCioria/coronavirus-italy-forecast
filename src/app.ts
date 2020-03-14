@@ -9,7 +9,8 @@ const ctx = chartElement.getContext("2d")!;
 
 const forecastElement = document.getElementById("forecast") as HTMLInputElement;
 const sliderElement = document.getElementById("slider") as HTMLInputElement;
-const filterElement = document.getElementById("filter") as HTMLInputElement;
+const filterElement = document.getElementById("filter") as HTMLSelectElement;
+const scaleElement = document.getElementById("scale") as HTMLSelectElement;
 
 forecastElement.value = String(3);
 sliderElement.setAttribute("min", "1");
@@ -33,10 +34,9 @@ const createGraph = (data: Array<Data>) => {
     });
   };
 
-  const chartDataFromPoints = (
-    dataPoint: regression.DataPoint
-  ): { x: string; y: number } => {
-    return { x: getLabels()[dataPoint[0] - 1], y: dataPoint[1] };
+  const chartDataFromPoints = (dataPoint: regression.DataPoint): number => {
+    return dataPoint[1];
+    // return { x: getLabels()[dataPoint[0] - 1], y: dataPoint[1] };
   };
 
   const getChartDatasets = (): Chart.ChartDataSets[] => {
@@ -71,6 +71,7 @@ const createGraph = (data: Array<Data>) => {
         backgroundColor: "transparent",
         borderColor: "#505050",
         pointRadius: 1,
+        yAxisID: "y-axis",
         data: points.map(chartDataFromPoints)
       },
       {
@@ -80,6 +81,7 @@ const createGraph = (data: Array<Data>) => {
         borderDash: [10, 5],
         borderWidth: 2,
         pointRadius: 1,
+        yAxisID: "y-axis",
         data: getProjection(exponential, getForecastRegressionLength()).map(
           chartDataFromPoints
         )
@@ -91,6 +93,7 @@ const createGraph = (data: Array<Data>) => {
         borderDash: [10, 5],
         borderWidth: 2,
         pointRadius: 1,
+        yAxisID: "y-axis",
         data: getProjection(cubic, getForecastRegressionLength()).map(
           chartDataFromPoints
         )
@@ -102,18 +105,21 @@ const createGraph = (data: Array<Data>) => {
         borderDash: [10, 5],
         borderWidth: 2,
         pointRadius: 1,
+        yAxisID: "y-axis",
         data: getProjection(quadratic, getForecastRegressionLength()).map(
           chartDataFromPoints
         )
       }
     ]
-      .filter(d => d.data.filter(x => x.y !== null).length > 1)
+      .filter(d => d.data.filter(y => y !== null).length > 1)
       .reverse();
   };
 
   const yAxisMax =
     regression.exponential(points).predict(points.length + getForecast())[1] *
     1.5;
+
+  const type = scaleElement.value as "linear" | "logarithmic";
 
   const chart = new Chart(ctx, {
     // The type of chart we want to create
@@ -131,20 +137,32 @@ const createGraph = (data: Array<Data>) => {
         mode: "x",
         intersect: false
       },
+      spanGaps: false,
       scales: {
         yAxes: [
           {
             id: "y-axis",
-            type: "linear",
-            ticks: {
-              max:
-                yAxisMax < 200
-                  ? Math.floor(yAxisMax / 20) * 20
-                  : yAxisMax < 1000
-                  ? Math.floor(yAxisMax / 50) * 50
-                  : Math.floor(yAxisMax / 500) * 500,
-              min: 0
-            }
+            type,
+            ticks:
+              type === "linear"
+                ? {
+                    max:
+                      yAxisMax < 200
+                        ? Math.floor(yAxisMax / 20) * 20
+                        : yAxisMax < 1000
+                        ? Math.floor(yAxisMax / 50) * 50
+                        : Math.floor(yAxisMax / 500) * 500,
+                    min: 0
+                  }
+                : {
+                    max: 100000,
+                    min: 0,
+                    callback: value => {
+                      return Math.log10(value) % 1 === 0
+                        ? Number(value.toString())
+                        : (null as any);
+                    }
+                  }
           }
         ]
       }
@@ -204,6 +222,7 @@ const main = async () => {
 
   sliderElement.addEventListener("input", updateChart);
   filterElement.addEventListener("change", updateChart);
+  scaleElement.addEventListener("change", updateChart);
   forecastElement.addEventListener("change", updateChart);
 
   updateChart();

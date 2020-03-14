@@ -7,3 +7,12 @@
 #inputs-wrapper {
   margin-left: 43px;
 }
+
+.input-wrapper {
+  margin-top: 20px;
+  margin-right: 50px;
+}
+
+.input-wrapper .label {
+  margin-bottom: 5px;
+}

@@ -9,21 +9,31 @@
   <div id="inputs-wrapper">
     <input type="range" class="slider" id="slider" />
 
-    <div id="forecast-wrapper" style="margin-top: 20px">
-      <div>Nº giorni previsti:</div>
-      <input type="number" min="0" id="forecast" style="margin-top: 5px" />
-    </div>
+    <div style="display: flex;">
+      <div id="forecast-wrapper" class="input-wrapper">
+        <div class="label">Nº giorni previsti:</div>
+        <input type="number" min="0" id="forecast" />
+      </div>
 
-    <div style="margin-top: 20px">
-      <div>Filtra i dati per:</div>
-      <select id="filter" style="margin-top: 5px">
-        <option value="italy">Italia</option>
-        <option value="france">Francia</option>
-        <option value="spain">Spagna</option>
-        <option value="lombardy">Lombardia</option>
-        <option value="emilia-romagna">Emilia Romagna</option>
-        <!-- <option value="veneto">Veneto</option> -->
-      </select>
+      <div class="input-wrapper">
+        <div class="label">Filtra i dati per:</div>
+        <select id="filter">
+          <option value="italy">Italia</option>
+          <option value="france">Francia</option>
+          <option value="spain">Spagna</option>
+          <option value="lombardy">Lombardia</option>
+          <option value="emilia-romagna">Emilia Romagna</option>
+          <!-- <option value="veneto">Veneto</option> -->
+        </select>
+      </div>
+
+      <div class="input-wrapper">
+        <div class="label">Scala asse Y:</div>
+        <select id="scale">
+          <option value="linear">Lineare</option>
+          <option value="logarithmic">Logaritmica</option>
+        </select>
+      </div>
     </div>
   </div>
 

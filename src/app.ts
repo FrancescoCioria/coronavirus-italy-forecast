@@ -55,8 +55,10 @@ const createGraph = (data: Array<Data>) => {
       regression: regression.Result,
       numberOfPoints: number
     ): regression.DataPoint[] => {
-      return [...new Array(numberOfPoints)].map((_, i) =>
-        regression.predict(getXPrediction() + i + 1)
+      return [...new Array(points.length + numberOfPoints)].map((_, i) =>
+        i + 1 >= getXPrediction()
+          ? regression.predict(i + 1)
+          : ([i + 1, null] as any)
       );
     };
 
@@ -78,10 +80,9 @@ const createGraph = (data: Array<Data>) => {
         borderDash: [10, 5],
         borderWidth: 2,
         pointRadius: 1,
-        data: [
-          exponential.points[getXPrediction() - 1],
-          ...getProjection(exponential, getForecastRegressionLength())
-        ].map(chartDataFromPoints)
+        data: getProjection(exponential, getForecastRegressionLength()).map(
+          chartDataFromPoints
+        )
       },
       {
         label: "Cubica",
@@ -90,10 +91,9 @@ const createGraph = (data: Array<Data>) => {
         borderDash: [10, 5],
         borderWidth: 2,
         pointRadius: 1,
-        data: [
-          cubic.points[getXPrediction() - 1],
-          ...getProjection(cubic, getForecastRegressionLength())
-        ].map(chartDataFromPoints)
+        data: getProjection(cubic, getForecastRegressionLength()).map(
+          chartDataFromPoints
+        )
       },
       {
         label: "Quadratica",
@@ -102,12 +102,13 @@ const createGraph = (data: Array<Data>) => {
         borderDash: [10, 5],
         borderWidth: 2,
         pointRadius: 1,
-        data: [
-          quadratic.points[getXPrediction() - 1],
-          ...getProjection(quadratic, getForecastRegressionLength())
-        ].map(chartDataFromPoints)
+        data: getProjection(quadratic, getForecastRegressionLength()).map(
+          chartDataFromPoints
+        )
       }
-    ].reverse();
+    ]
+      .filter(d => d.data.filter(x => x.y !== null).length > 1)
+      .reverse();
   };
 
   const yAxisMax =

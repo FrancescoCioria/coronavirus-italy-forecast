@@ -1,6 +1,7 @@
 import * as regression from "regression";
 import * as Chart from "chart.js";
 import { getData, Data } from "./data";
+import { createCompareGraph } from "./compare";
 
 Chart.defaults.global.animation!.duration = 0;
 
@@ -138,7 +139,6 @@ const createGraph = (data: Array<Data>) => {
         mode: "x",
         intersect: false
       },
-      spanGaps: false,
       scales: {
         yAxes: [
           {
@@ -178,33 +178,47 @@ const main = async () => {
 
   let chart: Chart | null = null;
 
+  const italy = {
+    label: "Italia",
+    data: data.italianData.filter(d => d.value > 15)
+  };
+  const france = {
+    label: "Francia",
+    data: data.globalData.filter(d => d.country === "France" && d.value > 15)
+  };
+  const spain = {
+    label: "Spagna",
+    data: data.globalData.filter(d => d.country === "Espagne" && d.value > 15)
+  };
+  const lombardy = {
+    label: "Lombardia",
+    data: data.regionalData.filter(
+      d => d.region === "Lombardia" && d.value > 15
+    )
+  };
+
+  const emiliaRomagna = {
+    label: "Emilia Romagna",
+    data: data.regionalData.filter(
+      d => d.region === "Emilia Romagna" && d.value > 15
+    )
+  };
+
   const updateChart = () => {
     chart && chart.destroy();
 
     const filteredData = (() => {
       switch (filterElement.value) {
         case "italy":
-          return data.italianData.filter(d => d.value > 15);
+          return italy.data;
         case "france":
-          return data.globalData.filter(
-            d => d.country === "France" && d.value > 15
-          );
+          return france.data;
         case "spain":
-          return data.globalData.filter(
-            d => d.country === "Espagne" && d.value > 15
-          );
+          return spain.data;
         case "lombardy":
-          return data.regionalData.filter(
-            d => d.region === "Lombardia" && d.value > 15
-          );
+          return lombardy.data;
         case "emilia-romagna":
-          return data.regionalData.filter(
-            d => d.region === "Emilia Romagna" && d.value > 15
-          );
-        // case "veneto":
-        //   return data.regionalData.filter(
-        //     d => d.region === "Veneto" && d.value > 15
-        //   );
+          return emiliaRomagna.data;
       }
     })()!;
 
@@ -227,6 +241,8 @@ const main = async () => {
   forecastElement.addEventListener("change", updateChart);
 
   updateChart();
+
+  createCompareGraph([italy, france, spain, lombardy, emiliaRomagna]);
 };
 
 main();

@@ -165,28 +165,27 @@ const main = async () => {
     const filteredData = (() => {
       switch (filterElement.value) {
         case "italy":
-          return italianData;
+          return data.italianData.filter(d => d.value > 15);
         case "france":
           return data.globalData.filter(
-            d =>
-              d.country === "France" &&
-              d.value > 0 &&
-              d.date > "2020-02-28T00:00:00"
+            d => d.country === "France" && d.value > 15
           );
         case "spain":
           return data.globalData.filter(
-            d => d.country === "Espagne" && d.value > 0
+            d => d.country === "Espagne" && d.value > 15
           );
         case "lombardy":
-          return data.regionalData.filter(d => d.region === "Lombardia");
+          return data.regionalData.filter(
+            d => d.region === "Lombardia" && d.value > 15
+          );
         case "emilia-romagna":
           return data.regionalData.filter(
-            d => d.region === "Emilia Romagna" && d.value > 0
+            d => d.region === "Emilia Romagna" && d.value > 15
           );
-        case "veneto":
-          return data.regionalData.filter(
-            d => d.region === "Veneto" && d.value > 0
-          );
+        // case "veneto":
+        //   return data.regionalData.filter(
+        //     d => d.region === "Veneto" && d.value > 15
+        //   );
       }
     })()!;
 

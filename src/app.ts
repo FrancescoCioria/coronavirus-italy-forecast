@@ -55,10 +55,11 @@ const createGraph = (data: Array<Data>) => {
       regression: regression.Result,
       numberOfPoints: number
     ): regression.DataPoint[] => {
-      return [...new Array(points.length + numberOfPoints)].map((_, i) =>
-        i + 1 >= getXPrediction()
-          ? regression.predict(i + 1)
-          : ([i + 1, null] as any)
+      return [...new Array(points.length + numberOfPoints)].map(
+        (_, i) => regression.predict(i + 1)
+        // i + 1 >= getXPrediction()
+        //   ? regression.predict(i + 1)
+        //   : ([i + 1, null] as any)
       );
     };
 
@@ -77,9 +78,9 @@ const createGraph = (data: Array<Data>) => {
       {
         label: "Esponenziale",
         backgroundColor: "transparent",
-        borderColor: "rgb(255, 99, 132)",
+        borderColor: "rgba(234, 67, 53, 1)",
         borderDash: [10, 5],
-        borderWidth: 2,
+        borderWidth: 1,
         pointRadius: 1,
         yAxisID: "y-axis",
         data: getProjection(exponential, getForecastRegressionLength()).map(
@@ -89,9 +90,9 @@ const createGraph = (data: Array<Data>) => {
       {
         label: "Cubica",
         backgroundColor: "transparent",
-        borderColor: "rgb(50, 255, 88)",
+        borderColor: "rgba(51, 168, 83, 1)",
         borderDash: [10, 5],
-        borderWidth: 2,
+        borderWidth: 1,
         pointRadius: 1,
         yAxisID: "y-axis",
         data: getProjection(cubic, getForecastRegressionLength()).map(
@@ -101,9 +102,9 @@ const createGraph = (data: Array<Data>) => {
       {
         label: "Quadratica",
         backgroundColor: "transparent",
-        borderColor: "cadetblue",
+        borderColor: "rgba(66, 133, 244, 1)",
         borderDash: [10, 5],
-        borderWidth: 2,
+        borderWidth: 1,
         pointRadius: 1,
         yAxisID: "y-axis",
         data: getProjection(quadratic, getForecastRegressionLength()).map(
@@ -156,7 +157,7 @@ const createGraph = (data: Array<Data>) => {
                   }
                 : {
                     max: 100000,
-                    min: 0,
+                    min: 10,
                     callback: value => {
                       return Math.log10(value) % 1 === 0
                         ? Number(value.toString())

@@ -157,26 +157,6 @@ const createGraph = (data: Array<Data>) => {
 const main = async () => {
   const data = await getData();
 
-  const firstThreeDays = [
-    {
-      date: "2020-02-21 18:00:00",
-      value: 1
-    },
-    {
-      date: "2020-02-22 18:00:00",
-      value: 2
-    },
-    {
-      date: "2020-02-23 18:00:00",
-      value: 3
-    }
-  ];
-
-  const italianData: Array<{ date: string; value: number }> = [
-    ...firstThreeDays,
-    ...data.italianData
-  ];
-
   let chart: Chart | null = null;
 
   const updateChart = () => {

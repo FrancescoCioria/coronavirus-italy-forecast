@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Response } from "../server/server";
 
 export type Data = {
   date: string;
@@ -7,24 +8,6 @@ export type Data = {
 
 export const getData = () => {
   return axios
-    .get<{
-      italianData: Array<Data>;
-      regionalData: Array<
-        Data & {
-          region: "Lombardia" | "Emilia Romagna" | "Veneto";
-        }
-      >;
-      globalData: Array<
-        Data & {
-          country:
-            | "France"
-            | "Espagne"
-            | "Chine"
-            | "Royaume-Uni"
-            | "États-Unis"
-            | "Iran";
-        }
-      >;
-    }>("https://protected-depths-21596.herokuapp.com/")
+    .get<Response>("https://protected-depths-21596.herokuapp.com/")
     .then(res => res.data);
 };

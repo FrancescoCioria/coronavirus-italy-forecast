@@ -7,8 +7,33 @@ const LM = require("ml-levenberg-marquardt").default;
 
 Chart.defaults.global.animation!.duration = 0;
 
-const logisticFunction = ([a, b, c, d, m]: number[]) => (x: number): number =>
-  d + (a - d) / Math.pow(1 + Math.pow(x / c, b), m);
+const asymmetricalSigmoidalRegression = (
+  points: regression.DataPoint[]
+): regression.Result => {
+  const asymmetricalSigmoidalFunction = ([a, b, c, d, m]: number[]) => (
+    x: number
+  ): number => d + (a - d) / Math.pow(1 + Math.pow(x / c, b), m);
+
+  const asymmetricalSigmoidalParameters = LM(
+    {
+      x: points.slice(0, getXPrediction()).map(p => p[0]),
+      y: points.slice(0, getXPrediction()).map(p => p[1])
+    },
+    asymmetricalSigmoidalFunction,
+    {
+      initialValues: [34.50764, 4.134764, 744.5857, 2549.07, 5114272],
+      damping: 1,
+      maxIterations: 1000
+    }
+  ).parameterValues;
+
+  return {
+    predict: (x: number): regression.DataPoint => [
+      x,
+      asymmetricalSigmoidalFunction(asymmetricalSigmoidalParameters)(x)
+    ]
+  } as regression.Result;
+};
 
 const chartElement = document.getElementById("chart") as HTMLCanvasElement;
 const ctx = chartElement.getContext("2d")!;
@@ -56,34 +81,18 @@ const createGraph = (data: Array<Data>) => {
     const quadratic = regression.polynomial(points.slice(0, getXPrediction()), {
       order: 2
     });
-
-    const logisticParameters = LM(
-      {
-        x: points.slice(0, getXPrediction()).map(p => p[0]),
-        y: points.slice(0, getXPrediction()).map(p => p[1])
-      },
-      logisticFunction,
-      {
-        initialValues: [34.50764, 4.134764, 744.5857, 2549.07, 5114272],
-        damping: 1,
-        maxIterations: 1000
-      }
-    ).parameterValues;
-
-    const logistic = {
-      predict: (x: number): regression.DataPoint => [
-        x,
-        logisticFunction(logisticParameters)(x)
-      ]
-    } as regression.Result;
+    const asymmetricalSigmoidal = asymmetricalSigmoidalRegression(
+      points.slice(0, getXPrediction())
+    );
 
     const getProjection = (
       regression: regression.Result,
       numberOfPoints: number
     ): regression.DataPoint[] => {
-      return [...new Array(points.length + numberOfPoints)].map((_, i) =>
-        regression.predict(i + 1)
-      );
+      return [...new Array(points.length + numberOfPoints)].map((_, i) => [
+        i + 1,
+        Math.round(regression.predict(i + 1)[1])
+      ]);
     };
 
     const getForecastRegressionLength = () =>
@@ -135,16 +144,17 @@ const createGraph = (data: Array<Data>) => {
         )
       },
       {
-        label: "Logistica",
+        label: "Sigmoidale asimmetrica (logistica)",
         backgroundColor: "transparent",
         borderColor: "rgb(251,188,3)",
         borderDash: [10, 5],
         borderWidth: 1,
         pointRadius: 1,
         yAxisID: "y-axis",
-        data: getProjection(logistic, getForecastRegressionLength()).map(
-          chartDataFromPoints
-        )
+        data: getProjection(
+          asymmetricalSigmoidal,
+          getForecastRegressionLength()
+        ).map(chartDataFromPoints)
       }
     ]
       .filter(d => d.data.filter(y => y !== null).length > 1)

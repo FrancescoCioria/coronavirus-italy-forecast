@@ -3,7 +3,12 @@ import * as Chart from "chart.js";
 import { getData, Data } from "./data";
 import { createCompareGraph } from "./compare";
 
+const LM = require("ml-levenberg-marquardt").default;
+
 Chart.defaults.global.animation!.duration = 0;
+
+const logisticFunction = ([a, b, c, d, m]: number[]) => (x: number): number =>
+  d + (a - d) / Math.pow(1 + Math.pow(x / c, b), m);
 
 const chartElement = document.getElementById("chart") as HTMLCanvasElement;
 const ctx = chartElement.getContext("2d")!;
@@ -52,15 +57,32 @@ const createGraph = (data: Array<Data>) => {
       order: 2
     });
 
+    const logisticParameters = LM(
+      {
+        x: points.slice(0, getXPrediction()).map(p => p[0]),
+        y: points.slice(0, getXPrediction()).map(p => p[1])
+      },
+      logisticFunction,
+      {
+        initialValues: [34.50764, 4.134764, 744.5857, 2549.07, 5114272],
+        damping: 1,
+        maxIterations: 1000
+      }
+    ).parameterValues;
+
+    const logistic = {
+      predict: (x: number): regression.DataPoint => [
+        x,
+        logisticFunction(logisticParameters)(x)
+      ]
+    } as regression.Result;
+
     const getProjection = (
       regression: regression.Result,
       numberOfPoints: number
     ): regression.DataPoint[] => {
-      return [...new Array(points.length + numberOfPoints)].map(
-        (_, i) => regression.predict(i + 1)
-        // i + 1 >= getXPrediction()
-        //   ? regression.predict(i + 1)
-        //   : ([i + 1, null] as any)
+      return [...new Array(points.length + numberOfPoints)].map((_, i) =>
+        regression.predict(i + 1)
       );
     };
 
@@ -111,15 +133,29 @@ const createGraph = (data: Array<Data>) => {
         data: getProjection(quadratic, getForecastRegressionLength()).map(
           chartDataFromPoints
         )
+      },
+      {
+        label: "Logistica",
+        backgroundColor: "transparent",
+        borderColor: "rgb(251,188,3)",
+        borderDash: [10, 5],
+        borderWidth: 1,
+        pointRadius: 1,
+        yAxisID: "y-axis",
+        data: getProjection(logistic, getForecastRegressionLength()).map(
+          chartDataFromPoints
+        )
       }
     ]
       .filter(d => d.data.filter(y => y !== null).length > 1)
       .reverse();
   };
 
-  const yAxisMax =
+  const yAxisMax = Math.min(
     regression.exponential(points).predict(points.length + getForecast())[1] *
-    1.5;
+      1.5,
+    20000
+  );
 
   const type = scaleElement.value as "linear" | "logarithmic";
 
@@ -137,7 +173,8 @@ const createGraph = (data: Array<Data>) => {
     options: {
       tooltips: {
         mode: "x",
-        intersect: false
+        intersect: false,
+        position: "nearest"
       },
       scales: {
         yAxes: [

@@ -21,6 +21,11 @@
   dependencies:
     moment "^2.10.2"
 
+"@types/estree@*":
+  version "0.0.42"
+  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.42.tgz#8d0c1f480339efedb3e46070e22dd63e0430dd11"
+  integrity sha512-K1DPVvnBCPxzD+G51/cxVIoc2X8uUVl1zpJeE6iKcgHMj4+tbat5Xu4TjV7v2QSDbIeAfLi2hIk+u2+s0MlpUQ==
+
 "@types/events@*":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@types/events/-/events-3.0.0.tgz#2862f3f58a9a7f7c3e78d79f130dd4d71c25c2a7"
@@ -39,6 +44,11 @@
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.3.tgz#3dca0e3f33b200fc7d1139c0cd96c1268cadfd9d"
   integrity sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
+
+"@types/ml-levenberg-marquardt@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@types/ml-levenberg-marquardt/-/ml-levenberg-marquardt-1.0.1.tgz#971921c780b23ee462d9e06710a069ef293d948f"
+  integrity sha512-OiqpPn46B/jaSHgWbN+ao11UDf6NWi46ns+CI89jjp2D2gatC0hiGc2WrQkpZqrk1fyKLIcZaZ7m2VnwWxH2Hg==
 
 "@types/node@*":
   version "13.9.0"
@@ -256,6 +266,11 @@ acorn@^6.2.1:
   version "6.4.1"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-6.4.1.tgz#531e58ba3f51b9dacb9a6646ca4debf5b14ca474"
   integrity sha512-ZVA9k326Nwrj3Cj9jlh3wGFutC2ZornPNARZwsNYqQYgN0EsV2d53w5RN/co65Ohn4sUAUtb1rSUAOD6XN9idA==
+
+acorn@^7.1.0:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/acorn/-/acorn-7.1.1.tgz#e35668de0b402f359de515c5482a1ab9f89a69bf"
+  integrity sha512-add7dgA5ppRPxCFJoAGfMDi7PIBXq1RtGo7BhbLaxwrXPOmw8gq48Y9ozT01hUKy9byMjlR20EJhu5zlkErEkg==
 
 ajv-errors@^1.0.0:
   version "1.0.1"
@@ -1956,6 +1971,18 @@ is-accessor-descriptor@^1.0.0:
   dependencies:
     kind-of "^6.0.0"
 
+is-any-array@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/is-any-array/-/is-any-array-0.0.3.tgz#cbdd8c7189d47b53b050969245f4ef7e55550b9b"
+  integrity sha512-Lr5SRykZv6uuYMZURz7+YpigT1ziTBHOTgFJ1zK7gL+9Wbet5Ha1ws6S84Jo/lH4zep02b95sk6o4+MTk97mPQ==
+
+is-any-array@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/is-any-array/-/is-any-array-0.1.0.tgz#e5a27965e3371610c10c66bca3be37ee177bdf8e"
+  integrity sha512-6Kkl1RnvfdkmXM6ZlP+kELGBMA74Nq5pSOm9gIKDaPRe9KQlIJzonrOgq0Jzn/iElB6F2/olpLgWYeVySzrSRg==
+  dependencies:
+    rollup "^1.31.1"
+
 is-arguments@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/is-arguments/-/is-arguments-1.0.4.tgz#3faf966c7cba0ff437fb31f6250082fcf0448cf3"
@@ -2458,6 +2485,44 @@ mkdirp@^0.5.1:
   integrity sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=
   dependencies:
     minimist "0.0.8"
+
+ml-array-max@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/ml-array-max/-/ml-array-max-1.1.2.tgz#ac14a4954ebdb9f401774cc1572fce439e12f94d"
+  integrity sha512-it2hYUSuYEwIRO6hjTWfe6gbGutF4Tuct7jxt3LiLE4wKFs6ku5FLNIRKtOL2jyH+Jdwt1ddbqKMX8inBM8RxA==
+  dependencies:
+    is-any-array "^0.0.3"
+
+ml-array-min@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/ml-array-min/-/ml-array-min-1.1.2.tgz#a084370fe78998a4131d566d066ee01bccce253a"
+  integrity sha512-92QzvsyK7TxGz618pno6bu0LXYcRKssbimP85qRllk2xX5Z4gnVxlOmrMjSerUut9zzbt1eQB4byXNCwT0vgwA==
+  dependencies:
+    is-any-array "^0.0.3"
+
+ml-array-rescale@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/ml-array-rescale/-/ml-array-rescale-1.2.2.tgz#288aefd3bef104be6bee72b18db90969d10262b6"
+  integrity sha512-Ijo4LegOUIQjv231y8g2/n9vyKA/CczJz3pR+zZ0TeZrqEVRs1uW4AjpbkN/01QplTI46ranMJa51L0g3VbQEg==
+  dependencies:
+    is-any-array "^0.0.3"
+    ml-array-max "^1.1.2"
+    ml-array-min "^1.1.2"
+
+ml-levenberg-marquardt@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/ml-levenberg-marquardt/-/ml-levenberg-marquardt-2.1.0.tgz#e2e29b88f342a3b10e95a60630ac24751f8ec68f"
+  integrity sha512-hhHOwmyE7+R8B0BjBFoJx477Do3mEo01/cOOrrYGEoRQLVho2m7U3icpTXXEHlWwBK0eR3Azke/h/FfF/1tV9w==
+  dependencies:
+    is-any-array "^0.1.0"
+    ml-matrix "^6.4.1"
+
+ml-matrix@^6.4.1:
+  version "6.4.1"
+  resolved "https://registry.yarnpkg.com/ml-matrix/-/ml-matrix-6.4.1.tgz#388082df1584b34ffe14e26115dbc5f0f3312ff1"
+  integrity sha512-YZ6lLRhk80B2zJSC0bKocnHbpxCdXFKWb6A7QTDztf5ob2qL1g/5AYNAuDtCQgbZtW1wwFZbjXbDgk/UdiO3Uw==
+  dependencies:
+    ml-array-rescale "^1.2.2"
 
 moment@^2.10.2:
   version "2.24.0"
@@ -3151,6 +3216,15 @@ ripemd160@^2.0.0, ripemd160@^2.0.1:
   dependencies:
     hash-base "^3.0.0"
     inherits "^2.0.1"
+
+rollup@^1.31.1:
+  version "1.32.1"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-1.32.1.tgz#4480e52d9d9e2ae4b46ba0d9ddeaf3163940f9c4"
+  integrity sha512-/2HA0Ec70TvQnXdzynFffkjA6XN+1e2pEv/uKS5Ulca40g2L7KuOE3riasHoNVHOsFD5KKZgDsMk1CP3Tw9s+A==
+  dependencies:
+    "@types/estree" "*"
+    "@types/node" "*"
+    acorn "^7.1.0"
 
 run-queue@^1.0.0, run-queue@^1.0.3:
   version "1.0.3"

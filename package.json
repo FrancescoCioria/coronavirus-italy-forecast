@@ -6,10 +6,12 @@
   "dependencies": {
     "@types/axios": "^0.14.0",
     "@types/chart.js": "^2.9.15",
+    "@types/ml-levenberg-marquardt": "^1.0.1",
     "@types/regression": "^2.0.0",
     "@types/webpack": "^4.41.7",
     "axios": "^0.19.2",
     "chart.js": "^2.9.3",
+    "ml-levenberg-marquardt": "^2.1.0",
     "regression": "^2.0.1",
     "ts-loader": "^6.2.1",
     "ts-node": "^8.6.2",

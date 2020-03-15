@@ -40,7 +40,8 @@ export const createCompareGraph = (
     options: {
       tooltips: {
         mode: "x",
-        intersect: false
+        intersect: false,
+        position: "nearest"
       },
       scales: {
         yAxes: [

@@ -2,8 +2,9 @@ import * as regression from "regression";
 import * as Chart from "chart.js";
 import { getData, Data } from "./data";
 import { createCompareGraph } from "./compare";
+import * as LMType from "ml-levenberg-marquardt";
 
-const LM = require("ml-levenberg-marquardt").default;
+const LM = require("ml-levenberg-marquardt").default as typeof LMType;
 
 Chart.defaults.global.animation!.duration = 0;
 
@@ -213,7 +214,15 @@ const createGraph = (data: Array<Data>) => {
                   }
           }
         ]
-      }
+      },
+      elements:
+        type === "logarithmic"
+          ? {
+              line: {
+                tension: 0
+              }
+            }
+          : {}
     }
   });
 

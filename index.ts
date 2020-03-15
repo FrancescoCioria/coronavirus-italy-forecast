@@ -11,7 +11,13 @@ export type Data = {
 export type CoronavirusDataFR = {
   PaysData: Array<{
     Date: string;
-    Pays: "France" | "Espagne";
+    Pays:
+      | "France"
+      | "Espagne"
+      | "Iran"
+      | "Royaume-Uni"
+      | "États-Unis"
+      | "Chine";
     Infection: number;
     Deces: number;
     Guerisons: number;
@@ -83,14 +89,20 @@ export const getItalianData = (): Promise<Data[]> =>
   ).then(data => data.map(d => ({ date: d.data, value: d.deceduti })));
 
 export const getGlobalData = (): Promise<Array<
-  Data & { country: "France" | "Espagne" }
+  Data & { country: CoronavirusDataFR["PaysData"][number]["Pays"] }
 >> =>
   get<CoronavirusDataFR>(
     "https://coronavirus.politologue.com/data/coronavirus/coronacsv.aspx?format=json"
   )
     .then(data =>
       data.PaysData.filter(
-        d => d.Pays === "Espagne" || d.Pays === "France"
+        d =>
+          d.Pays === "Espagne" ||
+          d.Pays === "France" ||
+          d.Pays === "Iran" ||
+          d.Pays === "Royaume-Uni" ||
+          d.Pays === "États-Unis" ||
+          d.Pays === "Chine"
       ).map(d => ({
         date: d.Date,
         value: d.Deces,

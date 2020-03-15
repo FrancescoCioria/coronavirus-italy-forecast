@@ -14,7 +14,17 @@ export const getData = () => {
           region: "Lombardia" | "Emilia Romagna" | "Veneto";
         }
       >;
-      globalData: Array<Data & { country: "France" | "Espagne" }>;
+      globalData: Array<
+        Data & {
+          country:
+            | "France"
+            | "Espagne"
+            | "Chine"
+            | "Royaume-Uni"
+            | "États-Unis"
+            | "Iran";
+        }
+      >;
     }>("https://protected-depths-21596.herokuapp.com/")
     .then(res => res.data);
 };

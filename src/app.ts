@@ -253,13 +253,34 @@ const main = async () => {
     label: "Spagna",
     data: data.globalData.filter(d => d.country === "Espagne" && d.value > 15)
   };
+  const uk = {
+    label: "UK",
+    data: data.globalData.filter(
+      d => d.country === "Royaume-Uni" && d.value > 15
+    )
+  };
+  const china = {
+    label: "Cina",
+    data: data.globalData.filter(d => d.country === "Chine" && d.value > 15)
+  };
+  const iran = {
+    label: "Iran",
+    data: data.globalData.filter(d => d.country === "Iran" && d.value > 15)
+  };
+  const usa = {
+    label: "USA",
+    data: data.globalData.filter(
+      d => d.country === "États-Unis" && d.value > 15
+    )
+  };
+
+  // regions
   const lombardy = {
     label: "Lombardia",
     data: data.regionalData.filter(
       d => d.region === "Lombardia" && d.value > 15
     )
   };
-
   const emiliaRomagna = {
     label: "Emilia Romagna",
     data: data.regionalData.filter(
@@ -305,7 +326,17 @@ const main = async () => {
 
   updateChart();
 
-  createCompareGraph([italy, france, spain, lombardy, emiliaRomagna]);
+  createCompareGraph([
+    italy,
+    france,
+    spain,
+    lombardy,
+    emiliaRomagna,
+    china,
+    uk,
+    iran,
+    usa
+  ]);
 };
 
 main();

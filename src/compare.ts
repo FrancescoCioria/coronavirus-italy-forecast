@@ -13,7 +13,10 @@ const colors = [
   "rgb(234, 67, 53)",
   "rgb(51, 168, 83)",
   "rgb(66, 133, 244)",
-  "rgb(251,188,3)"
+  "rgb(251,188,3)",
+  "#9D7ACD",
+  "#AE8058",
+  "#5f91c0"
 ];
 
 export const createCompareGraph = (
@@ -23,18 +26,23 @@ export const createCompareGraph = (
     type: "line",
 
     data: {
-      labels: data
-        .find(d => d.label === "Italia")!
-        .data.map((_, i) => String(i + 1)),
-      datasets: data.map((d, i) => ({
-        label: d.label,
-        backgroundColor: "transparent",
-        borderColor: colors[i],
-        pointRadius: 0.1,
-        borderWidth: i === 0 ? 2 : 1,
-        yAxisID: "y-axis",
-        data: d.data.map(p => p.value)
-      }))
+      labels: [
+        ...new Array(data.find(d => d.label === "Italia")!.data.length),
+        1,
+        2,
+        3
+      ].map((_, i) => String(i + 1)),
+      datasets: data
+        .filter(d => d.data.length > 2)
+        .map((d, i) => ({
+          label: d.label,
+          backgroundColor: "transparent",
+          borderColor: colors[i],
+          pointRadius: 0.1,
+          borderWidth: i === 0 ? 2 : 1,
+          yAxisID: "y-axis",
+          data: d.data.map(p => p.value)
+        }))
     },
 
     options: {

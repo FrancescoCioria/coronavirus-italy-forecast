@@ -24,8 +24,15 @@ const asymmetricalSigmoidalRegression = (
     {
       initialValues: [34.50764, 4.134764, 744.5857, 2549.07, 5114272],
       damping: 1,
-      maxIterations: 1000
-    }
+      maxIterations: 1000,
+      minValues: [
+        Number.MIN_SAFE_INTEGER,
+        Number.MIN_SAFE_INTEGER,
+        700,
+        Number.MIN_SAFE_INTEGER,
+        Number.MIN_SAFE_INTEGER
+      ]
+    } as any
   ).parameterValues;
 
   return {

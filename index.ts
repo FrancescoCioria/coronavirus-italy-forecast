@@ -46,37 +46,52 @@ export type CoronavirusRegionalDataITA = CoronavirusNationalDataITA & {
   long: number;
 };
 
+let cachedRequests: { [k: string]: { ts: number; data: unknown } } = {};
+
+const get = <A>(url: string): Promise<A> => {
+  if (cachedRequests[url] && cachedRequests[url].ts + 600000 < Date.now()) {
+    // cache for 10 minutes
+    return Promise.resolve(cachedRequests[url].data as A);
+  }
+
+  return axios.get<A>(url).then(res => {
+    cachedRequests[url] = {
+      ts: Date.now(),
+      data: res.data
+    };
+
+    return res.data;
+  });
+};
+
 export const getRegionalData = (): Promise<Array<
   Data & { region: CoronavirusRegionalDataITA["denominazione_regione"] }
 >> =>
-  axios
-    .get<CoronavirusRegionalDataITA[]>(
-      "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni.json"
-    )
-    .then(res =>
-      res.data.map(d => ({
-        date: d.data,
-        value: d.deceduti,
-        region: d.denominazione_regione
-      }))
-    );
+  get<CoronavirusRegionalDataITA[]>(
+    "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-regioni.json"
+  ).then(data =>
+    data.map(d => ({
+      date: d.data,
+      value: d.deceduti,
+      region: d.denominazione_regione
+    }))
+  );
 
 export const getItalianData = (): Promise<Data[]> =>
-  axios
-    .get<CoronavirusNationalDataITA[]>(
-      "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-andamento-nazionale.json"
-    )
-    .then(res => res.data.map(d => ({ date: d.data, value: d.deceduti })));
+  get<CoronavirusNationalDataITA[]>(
+    "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-andamento-nazionale.json"
+  ).then(data => data.map(d => ({ date: d.data, value: d.deceduti })));
 
 export const getGlobalData = (): Promise<Array<
   Data & { country: "France" | "Espagne" }
 >> =>
-  axios
-    .get<CoronavirusDataFR>(
-      "https://coronavirus.politologue.com/data/coronavirus/coronacsv.aspx?format=json"
-    )
-    .then(res =>
-      res.data.PaysData.map(d => ({
+  get<CoronavirusDataFR>(
+    "https://coronavirus.politologue.com/data/coronavirus/coronacsv.aspx?format=json"
+  )
+    .then(data =>
+      data.PaysData.filter(
+        d => d.Pays === "Espagne" || d.Pays === "France"
+      ).map(d => ({
         date: d.Date,
         value: d.Deces,
         country: d.Pays

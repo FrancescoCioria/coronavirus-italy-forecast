@@ -144,7 +144,7 @@ const createGraph = (data: Array<Data>) => {
         )
       },
       {
-        label: "Sigmoidale asimmetrica (logistica)",
+        label: "Sigmoide asimmetrica (logistica)",
         backgroundColor: "transparent",
         borderColor: "rgb(251,188,3)",
         borderDash: [10, 5],

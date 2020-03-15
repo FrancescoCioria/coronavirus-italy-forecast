@@ -7,14 +7,6 @@
     "start-server": "yarn ts-node --files --project ./tsconfig.json server/server.ts"
   },
   "dependencies": {
-    "axios": "^0.19.2",
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
-    "lodash": "^4.17.15",
-    "ts-node": "^8.6.2",
-    "typescript": "^3.8.3"
-  },
-  "devDependencies": {
     "@types/axios": "^0.14.0",
     "@types/chart.js": "^2.9.15",
     "@types/cors": "^2.8.6",
@@ -23,6 +15,14 @@
     "@types/ml-levenberg-marquardt": "^1.0.1",
     "@types/regression": "^2.0.0",
     "@types/webpack": "^4.41.7",
+    "axios": "^0.19.2",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "lodash": "^4.17.15",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.3"
+  },
+  "devDependencies": {
     "chart.js": "^2.9.3",
     "ml-levenberg-marquardt": "^2.1.0",
     "regression": "^2.0.1",

@@ -67,9 +67,15 @@ let cachedRequests: { [k: string]: { ts: number; data: unknown } } = {};
 const get = <A>(url: string): Promise<A> => {
   if (cachedRequests[url] && cachedRequests[url].ts + 600000 < Date.now()) {
     // cache for 10 minutes
-    console.log("results from cache");
+    console.log(
+      `results from cache (${url})`,
+      cachedRequests[url].ts,
+      Date.now()
+    );
     return Promise.resolve(cachedRequests[url].data as A);
   }
+
+  console.log(`fetching data (${url})`);
 
   return axios.get<A>(url).then(res => {
     cachedRequests[url] = {

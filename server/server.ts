@@ -65,7 +65,7 @@ export type Response = {
 let cachedRequests: { [k: string]: { ts: number; data: unknown } } = {};
 
 const get = <A>(url: string): Promise<A> => {
-  if (cachedRequests[url] && cachedRequests[url].ts + 600000 > Date.now()) {
+  if (cachedRequests[url] && Date.now() - cachedRequests[url].ts < 600000) {
     // cache for 10 minutes
     console.log(`results from cache (${url})`);
     return Promise.resolve(cachedRequests[url].data as A);

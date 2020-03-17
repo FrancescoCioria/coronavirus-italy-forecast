@@ -256,8 +256,12 @@ const main = async () => {
   const uk = {
     label: "UK",
     data: data.globalData.filter(
-      d => d.country === "United Kingdom" && d.value >= 10
+      d => d.country === "United Kingdom" && d.value >= 15
     )
+  };
+  const germany = {
+    label: "Germania",
+    data: data.globalData.filter(d => d.country === "Germany" && d.value >= 15)
   };
   const hubeiChina = {
     label: "Hubei (Cina)",
@@ -326,9 +330,10 @@ const main = async () => {
     spain,
     lombardy,
     hubeiChina,
-    iran,
     uk,
-    washingtonUS
+    germany,
+    washingtonUS,
+    iran
   ]);
 };
 

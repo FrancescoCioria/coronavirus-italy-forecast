@@ -33,7 +33,7 @@ export const createCompareGraph = (
         3
       ].map((_, i) => String(i + 1)),
       datasets: data
-        .filter(d => d.data.length > 2)
+        .filter(d => d.data.length > 1)
         .map((d, i) => ({
           label: d.label,
           backgroundColor: "transparent",

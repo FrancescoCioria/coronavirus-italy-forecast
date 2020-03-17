@@ -2,30 +2,34 @@ import axios from "axios";
 import * as express from "express";
 import * as cors from "cors";
 import sortBy = require("lodash/sortBy");
+import values = require("lodash/values");
+import omit = require("lodash/omit");
+import flatten = require("lodash/flatten");
+import * as csvToJson from "csvtojson";
 
 export type Data = {
   date: string;
   value: number;
 };
 
-export type CoronavirusDataFR = {
-  PaysData: Array<{
-    Date: string;
-    Pays:
-      | "France"
-      | "Espagne"
-      | "Iran"
-      | "Royaume-Uni"
-      | "États-Unis"
-      | "Chine";
-    Infection: number;
-    Deces: number;
-    Guerisons: number;
-    TauxDeces: number;
-    TauxGuerison: number;
-    TauxInfection: number;
-  }>;
-};
+export type Country =
+  | "China"
+  | "US"
+  | "France"
+  | "Spain"
+  | "United Kingdom"
+  | "Netherlands"
+  | "Germany"
+  | "Korea, South"
+  | "Iran";
+
+export type CoronavirusDataCSV = Array<{
+  "Province/State": string;
+  "Country/Region": Country;
+  Lat: string;
+  Long: string;
+  [k: string]: string;
+}>;
 
 export type CoronavirusDataITA = {
   ricoverati_con_sintomi: number;
@@ -57,9 +61,7 @@ export type Response = {
   regionalData: Array<
     Data & { region: CoronavirusRegionalDataITA["denominazione_regione"] }
   >;
-  globalData: Array<
-    Data & { country: CoronavirusDataFR["PaysData"][number]["Pays"] }
-  >;
+  globalData: Array<Data & { country: Country; province: string }>;
 };
 
 let cachedRequests: { [k: string]: { ts: number; data: unknown } } = {};
@@ -102,27 +104,51 @@ export const getItalianData = (): Promise<Data[]> =>
   ).then(data => data.map(d => ({ date: d.data, value: d.deceduti })));
 
 export const getGlobalData = (): Promise<Array<
-  Data & { country: CoronavirusDataFR["PaysData"][number]["Pays"] }
+  Data & { country: Country; province: string }
 >> =>
-  get<CoronavirusDataFR>(
-    "https://coronavirus.politologue.com/data/coronavirus/coronacsv.aspx?format=json"
+  get<string>(
+    "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv"
   )
-    .then(data =>
-      data.PaysData.filter(
-        d =>
-          d.Pays === "Espagne" ||
-          d.Pays === "France" ||
-          d.Pays === "Iran" ||
-          d.Pays === "Royaume-Uni" ||
-          d.Pays === "États-Unis" ||
-          d.Pays === "Chine"
-      ).map(d => ({
-        date: d.Date,
-        value: d.Deces,
-        country: d.Pays
-      }))
+    .then(csv =>
+      csvToJson({
+        output: "json"
+      }).fromString(csv)
     )
-    .then(data => sortBy(data, "date"));
+    .then((data: CoronavirusDataCSV) => {
+      return data.map(d => {
+        const countryValues = values(
+          omit(d, ["Province/State", "Country/Region", "Lat", "Long"])
+        );
+
+        const getDate = (i: number) => {
+          const firstDate = new Date("2020-01-22T18:00:00");
+          firstDate.setDate(firstDate.getDate() + i);
+          return firstDate.toISOString();
+        };
+
+        return countryValues.map((value, i) => ({
+          date: getDate(i),
+          value: parseInt(value),
+          province: d["Province/State"],
+          country: d["Country/Region"]
+        }));
+      });
+    })
+    .then(flatten)
+    .then(data =>
+      data.filter(
+        d =>
+          d.country === "Spain" ||
+          (d.country === "France" && d.province === "France") ||
+          d.country === "Iran" ||
+          d.country === "US" ||
+          (d.country === "United Kingdom" && d.province === "United Kingdom") ||
+          (d.country === "Netherlands" && d.province === "Netherlands") ||
+          d.country === "Germany" ||
+          d.country === "China" ||
+          d.country === "Korea, South"
+      )
+    );
 
 const app = express();
 

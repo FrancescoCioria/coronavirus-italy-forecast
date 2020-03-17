@@ -1,13 +1,23 @@
-import axios from "axios";
-import { Response } from "../server/server";
+import {
+  Response,
+  getItalianData,
+  getRegionalData,
+  getGlobalData
+} from "./server";
 
 export type Data = {
   date: string;
   value: number;
 };
 
-export const getData = () => {
-  return axios
-    .get<Response>("https://protected-depths-21596.herokuapp.com/")
-    .then(res => res.data);
+export const getData = async (): Promise<Response> => {
+  const italianData = await getItalianData();
+  const regionalData = await getRegionalData();
+  const globalData = await getGlobalData();
+
+  return {
+    italianData,
+    regionalData,
+    globalData
+  };
 };

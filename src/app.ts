@@ -251,26 +251,28 @@ const main = async () => {
   };
   const spain = {
     label: "Spagna",
-    data: data.globalData.filter(d => d.country === "Espagne" && d.value > 15)
+    data: data.globalData.filter(d => d.country === "Spain" && d.value > 15)
   };
   const uk = {
     label: "UK",
     data: data.globalData.filter(
-      d => d.country === "Royaume-Uni" && d.value > 15
+      d => d.country === "United Kingdom" && d.value >= 10
     )
   };
-  const china = {
-    label: "Cina",
-    data: data.globalData.filter(d => d.country === "Chine" && d.value > 15)
+  const hubeiChina = {
+    label: "Hubei (Cina)",
+    data: data.globalData.filter(
+      d => d.country === "China" && d.province === "Hubei" && d.value > 15
+    )
   };
   const iran = {
     label: "Iran",
     data: data.globalData.filter(d => d.country === "Iran" && d.value > 15)
   };
-  const usa = {
-    label: "USA",
+  const washingtonUS = {
+    label: "Washington (USA)",
     data: data.globalData.filter(
-      d => d.country === "États-Unis" && d.value > 15
+      d => d.country === "US" && d.province === "Washington" && d.value > 15
     )
   };
 
@@ -318,7 +320,16 @@ const main = async () => {
 
   updateChart();
 
-  createCompareGraph([italy, france, spain, lombardy, china, uk, iran, usa]);
+  createCompareGraph([
+    italy,
+    france,
+    spain,
+    lombardy,
+    hubeiChina,
+    iran,
+    uk,
+    washingtonUS
+  ]);
 };
 
 main();

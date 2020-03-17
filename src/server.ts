@@ -1,7 +1,4 @@
 import axios from "axios";
-import * as express from "express";
-import * as cors from "cors";
-import sortBy = require("lodash/sortBy");
 import values = require("lodash/values");
 import omit = require("lodash/omit");
 import flatten = require("lodash/flatten");
@@ -23,13 +20,13 @@ export type Country =
   | "Korea, South"
   | "Iran";
 
-export type CoronavirusDataCSV = Array<{
+export type CoronavirusDataCSV = {
   "Province/State": string;
   "Country/Region": Country;
   Lat: string;
   Long: string;
   [k: string]: string;
-}>;
+};
 
 export type CoronavirusDataITA = {
   ricoverati_con_sintomi: number;
@@ -64,25 +61,8 @@ export type Response = {
   globalData: Array<Data & { country: Country; province: string }>;
 };
 
-let cachedRequests: { [k: string]: { ts: number; data: unknown } } = {};
-
 const get = <A>(url: string): Promise<A> => {
-  if (cachedRequests[url] && Date.now() - cachedRequests[url].ts < 600000) {
-    // cache for 10 minutes
-    console.log(`results from cache (${url})`);
-    return Promise.resolve(cachedRequests[url].data as A);
-  }
-
-  console.log(`fetching data (${url})`);
-
-  return axios.get<A>(url).then(res => {
-    cachedRequests[url] = {
-      ts: Date.now(),
-      data: res.data
-    };
-
-    return res.data;
-  });
+  return axios.get<A>(url).then(res => res.data);
 };
 
 export const getRegionalData = (): Promise<Array<
@@ -101,7 +81,28 @@ export const getRegionalData = (): Promise<Array<
 export const getItalianData = (): Promise<Data[]> =>
   get<CoronavirusNationalDataITA[]>(
     "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json/dpc-covid19-ita-andamento-nazionale.json"
-  ).then(data => data.map(d => ({ date: d.data, value: d.deceduti })));
+  )
+    .then(data => data.map(d => ({ date: d.data, value: d.deceduti })))
+    .then(
+      (data): Array<Data> => {
+        const firstThreeDays = [
+          {
+            date: "2020-02-21 18:00:00",
+            value: 1
+          },
+          {
+            date: "2020-02-22 18:00:00",
+            value: 2
+          },
+          {
+            date: "2020-02-23 18:00:00",
+            value: 3
+          }
+        ];
+
+        return [...firstThreeDays, ...data];
+      }
+    );
 
 export const getGlobalData = (): Promise<Array<
   Data & { country: Country; province: string }
@@ -114,10 +115,37 @@ export const getGlobalData = (): Promise<Array<
         output: "json"
       }).fromString(csv)
     )
-    .then((data: CoronavirusDataCSV) => {
+    .then((data: CoronavirusDataCSV[]) => {
+      const fixData = (data: CoronavirusDataCSV): CoronavirusDataCSV => {
+        if (data["Country/Region"] === "Spain") {
+          return {
+            ...data,
+            "3/12/20": "86"
+          };
+        }
+
+        if (data["Province/State"] === "France") {
+          return {
+            ...data,
+            "3/9/20": "25",
+            "3/12/20": "61",
+            "3/15/20": "127"
+          };
+        }
+
+        if (data["Province/State"] === "United Kingdom") {
+          return {
+            ...data,
+            "3/15/20": "35"
+          };
+        }
+
+        return data;
+      };
+
       return data.map(d => {
         const countryValues = values(
-          omit(d, ["Province/State", "Country/Region", "Lat", "Long"])
+          omit(fixData(d), ["Province/State", "Country/Region", "Lat", "Long"])
         );
 
         const getDate = (i: number) => {
@@ -149,40 +177,3 @@ export const getGlobalData = (): Promise<Array<
           d.country === "Korea, South"
       )
     );
-
-const app = express();
-
-app.use(cors());
-
-app.get("/", async (_, res) => {
-  const _italianData = await getItalianData();
-  const regionalData = await getRegionalData();
-  const globalData = await getGlobalData();
-
-  const firstThreeDays = [
-    {
-      date: "2020-02-21 18:00:00",
-      value: 1
-    },
-    {
-      date: "2020-02-22 18:00:00",
-      value: 2
-    },
-    {
-      date: "2020-02-23 18:00:00",
-      value: 3
-    }
-  ];
-
-  const italianData: Array<Data> = [...firstThreeDays, ..._italianData];
-
-  const response: Response = {
-    italianData,
-    regionalData,
-    globalData
-  };
-
-  res.json(response);
-});
-
-app.listen(process.env.PORT || 8081);

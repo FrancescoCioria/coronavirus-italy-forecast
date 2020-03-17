@@ -281,12 +281,6 @@ const main = async () => {
       d => d.region === "Lombardia" && d.value > 15
     )
   };
-  const emiliaRomagna = {
-    label: "Emilia Romagna",
-    data: data.regionalData.filter(
-      d => d.region === "Emilia Romagna" && d.value > 15
-    )
-  };
 
   const updateChart = () => {
     chart && chart.destroy();
@@ -301,8 +295,6 @@ const main = async () => {
           return spain.data;
         case "lombardy":
           return lombardy.data;
-        case "emilia-romagna":
-          return emiliaRomagna.data;
       }
     })()!;
 

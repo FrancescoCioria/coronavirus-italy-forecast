@@ -326,8 +326,8 @@ const main = async () => {
     spain,
     lombardy,
     hubeiChina,
-    uk,
     iran,
+    uk,
     washingtonUS
   ]);
 };

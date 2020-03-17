@@ -20,13 +20,13 @@ export type Country =
   | "Korea, South"
   | "Iran";
 
-export type CoronavirusDataCSV = Array<{
+export type CoronavirusDataCSV = {
   "Province/State": string;
   "Country/Region": Country;
   Lat: string;
   Long: string;
   [k: string]: string;
-}>;
+};
 
 export type CoronavirusDataITA = {
   ricoverati_con_sintomi: number;
@@ -61,25 +61,8 @@ export type Response = {
   globalData: Array<Data & { country: Country; province: string }>;
 };
 
-let cachedRequests: { [k: string]: { ts: number; data: unknown } } = {};
-
 const get = <A>(url: string): Promise<A> => {
-  if (cachedRequests[url] && Date.now() - cachedRequests[url].ts < 600000) {
-    // cache for 10 minutes
-    console.log(`results from cache (${url})`);
-    return Promise.resolve(cachedRequests[url].data as A);
-  }
-
-  console.log(`fetching data (${url})`);
-
-  return axios.get<A>(url).then(res => {
-    cachedRequests[url] = {
-      ts: Date.now(),
-      data: res.data
-    };
-
-    return res.data;
-  });
+  return axios.get<A>(url).then(res => res.data);
 };
 
 export const getRegionalData = (): Promise<Array<
@@ -132,10 +115,37 @@ export const getGlobalData = (): Promise<Array<
         output: "json"
       }).fromString(csv)
     )
-    .then((data: CoronavirusDataCSV) => {
+    .then((data: CoronavirusDataCSV[]) => {
+      const fixData = (data: CoronavirusDataCSV): CoronavirusDataCSV => {
+        if (data["Country/Region"] === "Spain") {
+          return {
+            ...data,
+            "3/12/20": "86"
+          };
+        }
+
+        if (data["Province/State"] === "France") {
+          return {
+            ...data,
+            "3/9/20": "25",
+            "3/12/20": "61",
+            "3/15/20": "127"
+          };
+        }
+
+        if (data["Province/State"] === "United Kingdom") {
+          return {
+            ...data,
+            "3/15/20": "35"
+          };
+        }
+
+        return data;
+      };
+
       return data.map(d => {
         const countryValues = values(
-          omit(d, ["Province/State", "Country/Region", "Lat", "Long"])
+          omit(fixData(d), ["Province/State", "Country/Region", "Lat", "Long"])
         );
 
         const getDate = (i: number) => {

@@ -16,7 +16,10 @@ const colors = [
   "rgb(251,188,3)",
   "#9D7ACD",
   "#AE8058",
-  "#5f91c0"
+  "#5f91c0",
+  "#33FF57",
+  "#F1923D",
+  "#ababab"
 ];
 
 export const createCompareGraph = (

@@ -263,6 +263,18 @@ const main = async () => {
     label: "Germania",
     data: data.globalData.filter(d => d.country === "Germany" && d.value >= 15)
   };
+  const netherlands = {
+    label: "Olanda",
+    data: data.globalData.filter(
+      d => d.country === "Netherlands" && d.value >= 15
+    )
+  };
+  const southKorea = {
+    label: "Corea del Sud",
+    data: data.globalData.filter(
+      d => d.country === "Korea, South" && d.value >= 15
+    )
+  };
   const hubeiChina = {
     label: "Hubei (Cina)",
     data: data.globalData.filter(
@@ -299,6 +311,12 @@ const main = async () => {
           return france.data;
         case "spain":
           return spain.data;
+        case "uk":
+          return uk.data;
+        case "netherlands":
+          return netherlands.data;
+        // case "germany":
+        //   return germany.data;
         case "lombardy":
           return lombardy.data;
       }
@@ -328,11 +346,12 @@ const main = async () => {
     italy,
     france,
     spain,
-    lombardy,
+    netherlands,
     hubeiChina,
     uk,
     germany,
     washingtonUS,
+    southKorea,
     iran
   ]);
 };

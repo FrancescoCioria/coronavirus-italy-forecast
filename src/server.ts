@@ -129,14 +129,16 @@ export const getGlobalData = (): Promise<Array<
             ...data,
             "3/9/20": "25",
             "3/12/20": "61",
-            "3/15/20": "127"
+            "3/15/20": "127",
+            "3/17/20": "175"
           };
         }
 
         if (data["Province/State"] === "United Kingdom") {
           return {
             ...data,
-            "3/15/20": "35"
+            "3/15/20": "35",
+            "3/17/20": "71"
           };
         }
 

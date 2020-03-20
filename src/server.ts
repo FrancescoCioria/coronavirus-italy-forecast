@@ -11,21 +11,22 @@ export type Data = {
 
 export type Country =
   | "China"
-  | "US"
+  | "United States"
   | "France"
   | "Spain"
   | "United Kingdom"
   | "Netherlands"
   | "Germany"
-  | "Korea, South"
+  | "South Korea"
   | "Iran";
 
 export type CoronavirusDataCSV = {
-  "Province/State": string;
-  "Country/Region": Country;
-  Lat: string;
-  Long: string;
-  [k: string]: string;
+  date: string;
+  location: Country;
+  new_cases: string;
+  new_deaths: string;
+  total_cases: string;
+  total_deaths: string;
 };
 
 export type CoronavirusDataITA = {
@@ -58,7 +59,7 @@ export type Response = {
   regionalData: Array<
     Data & { region: CoronavirusRegionalDataITA["denominazione_regione"] }
   >;
-  globalData: Array<Data & { country: Country; province: string }>;
+  globalData: Array<Data & { country: Country }>;
 };
 
 const get = <A>(url: string): Promise<A> => {
@@ -104,81 +105,25 @@ export const getItalianData = (): Promise<Data[]> =>
       }
     );
 
-export const getGlobalData = (): Promise<Array<
-  Data & { country: Country; province: string }
->> =>
-  get<string>(
-    "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv"
-  )
+export const getGlobalData = (): Promise<Array<Data & { country: Country }>> =>
+  get<string>("https://covid.ourworldindata.org/data/ecdc/full_data.csv")
     .then(csv =>
       csvToJson({
         output: "json"
       }).fromString(csv)
     )
-    .then((data: CoronavirusDataCSV[]) => {
-      const fixData = (data: CoronavirusDataCSV): CoronavirusDataCSV => {
-        if (data["Country/Region"] === "Spain") {
-          return {
-            ...data,
-            "3/12/20": "86"
-          };
-        }
+    .then(
+      (data: CoronavirusDataCSV[]): Array<Data & { country: Country }> => [
+        {
+          date: "2020-03-08",
+          value: 17,
+          country: "Spain"
+        },
 
-        if (data["Province/State"] === "France") {
-          return {
-            ...data,
-            "3/9/20": "25",
-            "3/12/20": "61",
-            "3/15/20": "127",
-            "3/17/20": "175",
-            "3/18/20": "264",
-            "3/19/20": "372"
-          };
-        }
-
-        if (data["Province/State"] === "United Kingdom") {
-          return {
-            ...data,
-            "3/15/20": "35",
-            "3/17/20": "71",
-            "3/18/20": "108"
-          };
-        }
-
-        return data;
-      };
-
-      return data.map(d => {
-        const countryValues = values(
-          omit(fixData(d), ["Province/State", "Country/Region", "Lat", "Long"])
-        );
-
-        const getDate = (i: number) => {
-          const firstDate = new Date("2020-01-22T18:00:00");
-          firstDate.setDate(firstDate.getDate() + i);
-          return firstDate.toISOString();
-        };
-
-        return countryValues.map((value, i) => ({
-          date: getDate(i),
-          value: parseInt(value),
-          province: d["Province/State"],
-          country: d["Country/Region"]
-        }));
-      });
-    })
-    .then(flatten)
-    .then(data =>
-      data.filter(
-        d =>
-          d.country === "Spain" ||
-          (d.country === "France" && d.province === "France") ||
-          d.country === "Iran" ||
-          d.country === "US" ||
-          (d.country === "United Kingdom" && d.province === "United Kingdom") ||
-          (d.country === "Netherlands" && d.province === "Netherlands") ||
-          d.country === "Germany" ||
-          d.country === "China" ||
-          d.country === "Korea, South"
-      )
+        ...data.map(d => ({
+          date: d.date,
+          value: parseInt(d.total_deaths),
+          country: d.location
+        }))
+      ]
     );

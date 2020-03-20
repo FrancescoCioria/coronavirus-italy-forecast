@@ -241,54 +241,64 @@ const main = async () => {
 
   let chart: Chart | null = null;
 
+  const startNumberOfDeaths = 15;
+
   const italy = {
     label: "Italia",
-    data: data.italianData.filter(d => d.value > 15)
+    data: data.italianData.filter(d => d.value > startNumberOfDeaths)
   };
   const france = {
     label: "Francia",
-    data: data.globalData.filter(d => d.country === "France" && d.value > 15)
+    data: data.globalData.filter(
+      d => d.country === "France" && d.value > startNumberOfDeaths
+    )
   };
   const spain = {
     label: "Spagna",
-    data: data.globalData.filter(d => d.country === "Spain" && d.value > 15)
+    data: data.globalData.filter(
+      d => d.country === "Spain" && d.value > startNumberOfDeaths
+    )
   };
   const uk = {
     label: "UK",
     data: data.globalData.filter(
-      d => d.country === "United Kingdom" && d.value >= 15
+      d => d.country === "United Kingdom" && d.value >= startNumberOfDeaths
     )
   };
   const germany = {
     label: "Germania",
-    data: data.globalData.filter(d => d.country === "Germany" && d.value >= 15)
+    data: data.globalData.filter(
+      d => d.country === "Germany" && d.value >= startNumberOfDeaths
+    )
   };
   const netherlands = {
     label: "Olanda",
     data: data.globalData.filter(
-      d => d.country === "Netherlands" && d.value >= 15
+      d => d.country === "Netherlands" && d.value >= startNumberOfDeaths
     )
   };
   const southKorea = {
     label: "Corea del Sud",
     data: data.globalData.filter(
-      d => d.country === "Korea, South" && d.value >= 15
+      d => d.country === "South Korea" && d.value >= startNumberOfDeaths
     )
   };
   const hubeiChina = {
-    label: "Hubei (Cina)",
+    label: "Cina",
     data: data.globalData.filter(
-      d => d.country === "China" && d.province === "Hubei" && d.value > 15
+      d => d.country === "China" && d.value > startNumberOfDeaths
     )
   };
   const iran = {
     label: "Iran",
-    data: data.globalData.filter(d => d.country === "Iran" && d.value > 15)
+    data: data.globalData.filter(
+      d => d.country === "Iran" && d.value > startNumberOfDeaths
+    )
   };
   const washingtonUS = {
-    label: "Washington (USA)",
+    label: "USA",
     data: data.globalData.filter(
-      d => d.country === "US" && d.province === "Washington" && d.value > 15
+      d => d.country === "United States" && d.value > startNumberOfDeaths
     )
   };
 
@@ -296,7 +306,7 @@ const main = async () => {
   const lombardy = {
     label: "Lombardia",
     data: data.regionalData.filter(
-      d => d.region === "Lombardia" && d.value > 15
+      d => d.region === "Lombardia" && d.value > startNumberOfDeaths
     )
   };
 

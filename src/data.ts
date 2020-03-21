@@ -11,9 +11,11 @@ export type Data = {
 };
 
 export const getData = async (): Promise<Response> => {
-  const italianData = await getItalianData();
-  const regionalData = await getRegionalData();
-  const globalData = await getGlobalData();
+  const [italianData, regionalData, globalData] = await Promise.all<
+    Response["italianData"],
+    Response["regionalData"],
+    Response["globalData"]
+  >([getItalianData(), getRegionalData(), getGlobalData()]);
 
   return {
     italianData,

@@ -255,14 +255,11 @@ const createGraph = (data: Array<Data>) => {
           }
         ]
       },
-      elements:
-        type === "logarithmic"
-          ? {
-              line: {
-                tension: 0
-              }
-            }
-          : {}
+      elements: {
+        line: {
+          tension: 0
+        }
+      }
     }
   });
 

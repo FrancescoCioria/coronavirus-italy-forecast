@@ -2,6 +2,7 @@ import axios from "axios";
 import values = require("lodash/values");
 import omit = require("lodash/omit");
 import flatten = require("lodash/flatten");
+import sortBy = require("lodash/sortBy");
 import * as csvToJson from "csvtojson";
 
 export type Data = {
@@ -124,7 +125,33 @@ export const getGlobalData = (): Promise<Array<Data & { country: Country }>> =>
           date: d.date,
           value: parseInt(d.total_deaths),
           country: d.location
-        }))
+        })),
+
+        {
+          date: "2020-03-17",
+          value: 17,
+          country: "Germany"
+        },
+        {
+          date: "2020-03-18",
+          value: 26,
+          country: "Germany"
+        },
+        {
+          date: "2020-03-19",
+          value: 28,
+          country: "Germany"
+        },
+        {
+          date: "2020-03-20",
+          value: 44,
+          country: "Germany"
+        },
+        {
+          date: "2020-03-21",
+          value: 68,
+          country: "Germany"
+        }
       ]
     )
     .then(data => {

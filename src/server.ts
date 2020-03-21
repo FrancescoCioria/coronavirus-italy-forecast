@@ -115,7 +115,7 @@ export const getGlobalData = (): Promise<Array<Data & { country: Country }>> =>
     .then(
       (data: CoronavirusDataCSV[]): Array<Data & { country: Country }> => [
         {
-          date: "2020-03-08",
+          date: "2020-03-09",
           value: 17,
           country: "Spain"
         },
@@ -126,4 +126,13 @@ export const getGlobalData = (): Promise<Array<Data & { country: Country }>> =>
           country: d.location
         }))
       ]
-    );
+    )
+    .then(data => {
+      return sortBy(
+        data.map(d => ({
+          ...d,
+          date: new Date(new Date(d.date).setHours(-5)).toISOString() // 🙈
+        })),
+        "date"
+      );
+    });

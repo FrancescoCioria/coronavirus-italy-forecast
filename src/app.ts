@@ -3,6 +3,7 @@ import * as Chart from "chart.js";
 import { getData, Data } from "./data";
 import { createCompareGraph } from "./compare";
 import * as LMType from "ml-levenberg-marquardt";
+import * as queryString from "query-string";
 
 const LM = require("ml-levenberg-marquardt").default as typeof LMType;
 
@@ -54,8 +55,40 @@ const scaleElement = document.getElementById("scale") as HTMLSelectElement;
 forecastElement.value = String(3);
 sliderElement.setAttribute("min", "1");
 
-const getForecast = () => parseInt(forecastElement.value);
-const getXPrediction = () => parseInt(sliderElement.value);
+const updateUrlHash = (): void => {
+  const query = {
+    // slider: sliderElement.value,
+    filter: filterElement.value,
+    scale: scaleElement.value,
+    forecast: parseInt(forecastElement.value)
+  };
+
+  location.hash = queryString.stringify(query);
+};
+
+const getHash = (): {
+  filter: "italy" | "france" | "spain" | "uk" | "netherlands" | "lombardy";
+  scale: "linear" | "logarithmic";
+  forecast: number;
+} => {
+  return queryString.parse(location.hash, { parseNumbers: true }) as any;
+};
+
+if (window.location.hash.length === 0) {
+  updateUrlHash();
+} else {
+  const hash = getHash();
+  forecastElement.value = String(hash.forecast);
+  filterElement.value = hash.filter;
+  scaleElement.value = hash.scale;
+}
+
+filterElement.addEventListener("change", updateUrlHash);
+scaleElement.addEventListener("change", updateUrlHash);
+forecastElement.addEventListener("change", updateUrlHash);
+
+const getForecast = (): number => getHash().forecast;
+const getXPrediction = (): number => parseInt(sliderElement.value);
 
 const createGraph = (data: Array<Data>) => {
   const points: regression.DataPoint[] = data.map((d, i) => [i + 1, d.value]);
@@ -175,7 +208,7 @@ const createGraph = (data: Array<Data>) => {
     20000
   );
 
-  const type = scaleElement.value as "linear" | "logarithmic";
+  const type = getHash().scale;
 
   const chart = new Chart(ctx, {
     // The type of chart we want to create
@@ -313,8 +346,8 @@ const main = async () => {
   const updateChart = () => {
     chart && chart.destroy();
 
-    const filteredData = (() => {
-      switch (filterElement.value) {
+    const filteredData = ((): Data[] => {
+      switch (getHash().filter) {
         case "italy":
           return italy.data;
         case "france":
@@ -346,9 +379,10 @@ const main = async () => {
   };
 
   sliderElement.addEventListener("input", updateChart);
-  filterElement.addEventListener("change", updateChart);
-  scaleElement.addEventListener("change", updateChart);
-  forecastElement.addEventListener("change", updateChart);
+
+  window.onhashchange = () => {
+    updateChart();
+  };
 
   updateChart();
 

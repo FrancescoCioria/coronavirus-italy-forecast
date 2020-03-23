@@ -202,11 +202,12 @@ const createGraph = (data: Array<Data>) => {
       .reverse();
   };
 
-  const yAxisMax = Math.min(
-    regression.exponential(points).predict(points.length + getForecast())[1] *
-      1.5,
-    20000
-  );
+  const yMaxTemp = points[points.length - 1][1] * 10;
+
+  const yAxisMax =
+    yMaxTemp < 10000
+      ? Math.round((points[points.length - 1][1] * 10) / 1000) * 1000
+      : Math.round((points[points.length - 1][1] * 10) / 10000) * 10000;
 
   const type = getHash().scale;
 

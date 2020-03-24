@@ -215,9 +215,28 @@ const createGraph = (data: Array<Data>) => {
 
   const type = getHash().scale;
 
+  const lockdownDay = ((): number | null => {
+    switch (getHash().filter) {
+      case "italy":
+        return 13;
+      case "france":
+        return 10;
+      case "spain":
+        return 8;
+      case "uk":
+        return 11;
+      case "lombardy":
+        return 10;
+      default:
+        return null;
+    }
+  })();
+
   const chart = new Chart(ctx, {
     // The type of chart we want to create
     type: "line",
+
+    plugins: [],
 
     // The data for our dataset
     data: {
@@ -264,6 +283,29 @@ const createGraph = (data: Array<Data>) => {
         line: {
           tension: 0
         }
+      },
+      ["annotation" as any]: {
+        annotations:
+          lockdownDay !== null
+            ? [
+                {
+                  id: `vline$`,
+                  type: "line",
+                  mode: "vertical",
+                  scaleID: "x-axis-0",
+                  value: lockdownDay - 1,
+                  borderColor: "#505050",
+                  borderWidth: 1,
+                  label: {
+                    backgroundColor: "#505050",
+                    content: "Lockdown",
+                    enabled: true,
+                    position: "top",
+                    yAdjust: 10
+                  }
+                }
+              ]
+            : []
       }
     }
   });

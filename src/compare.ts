@@ -1,5 +1,6 @@
 import * as Chart from "chart.js";
-import { Data } from "./data";
+import { Response, Country } from "./server";
+const annotationPlugin = require("chartjs-plugin-annotation");
 
 Chart.defaults.global.animation!.duration = 0;
 
@@ -8,44 +9,82 @@ const chartElement = document.getElementById(
 ) as HTMLCanvasElement;
 const ctx = chartElement.getContext("2d")!;
 
-const colors = [
-  "#505050",
-  "rgb(234, 67, 53)",
-  "rgb(51, 168, 83)",
-  "rgb(66, 133, 244)",
-  "rgb(251,188,3)",
-  "#9D7ACD",
-  "#AE8058",
-  "#5f91c0",
-  "#33FF57",
-  "#F1923D",
-  "#ababab"
-];
+const colors: { [k in Country]: string } = {
+  Italy: "#505050",
+  France: "rgb(234, 67, 53)",
+  Spain: "rgb(51, 168, 83)",
+  Netherlands: "rgb(66, 133, 244)",
+  China: "rgb(251,188,3)",
+  "United Kingdom": "#9D7ACD",
+  Germany: "#AE8058",
+  "United States": "#5f91c0",
+  "South Korea": "#33FF57",
+  Belgium: "#F1923D",
+  Switzerland: "pink"
+};
 
-export const createCompareGraph = (
-  data: Array<{ label: string; data: Data[] }>
-) => {
+const translateCountryToItalian: { [k in Country]: string } = {
+  Italy: "Italia",
+  "South Korea": "Corea del Sud",
+  "United Kingdom": "UK",
+  "United States": "USA",
+  Belgium: "Belgio",
+  China: "Cina",
+  France: "Francia",
+  Germany: "Germania",
+  Netherlands: "Olanda",
+  Spain: "Spagna",
+  Switzerland: "Svizzera"
+};
+
+const lockdownAnnotation = (
+  country: Country,
+  countryISO: string | string[],
+  day: number,
+  yAdjust?: number
+) => ({
+  id: `vline${countryISO}`,
+  type: "line",
+  mode: "vertical",
+  scaleID: "x-axis-0",
+  value: day - 1,
+  borderColor: colors[country],
+  borderWidth: 1,
+  label: {
+    backgroundColor: colors[country],
+    content: countryISO,
+    enabled: true,
+    position: "top",
+    yAdjust: yAdjust || 10
+  }
+});
+
+export const createCompareGraph = (data: Response["globalData"][]) => {
   const chart = new Chart(ctx, {
     type: "line",
 
+    plugins: [annotationPlugin],
+
     data: {
       labels: [
-        ...new Array(data.find(d => d.label === "Italia")!.data.length),
+        ...new Array(data.find(d => d[0].country === "Italy")!.length),
         1,
         2,
         3
       ].map((_, i) => String(i + 1)),
-      datasets: data
-        .filter(d => d.data.length > 1)
-        .map((d, i) => ({
-          label: d.label,
+      datasets: data.map((d, i) => {
+        const country = d[0].country;
+        return {
+          label: translateCountryToItalian[country] || country,
           backgroundColor: "transparent",
-          borderColor: colors[i],
+          borderColor: colors[country] || "#999",
           pointRadius: 0.1,
           borderWidth: i === 0 ? 2 : 1,
           yAxisID: "y-axis",
-          data: d.data.map(p => p.value)
-        }))
+          data: d.map(p => p.value),
+          hidden: !translateCountryToItalian[country]
+        };
+      })
     },
 
     options: {
@@ -75,6 +114,15 @@ export const createCompareGraph = (
         line: {
           tension: 0
         }
+      },
+      ["annotation" as any]: {
+        annotations: [
+          lockdownAnnotation("Italy", "IT", 13),
+          lockdownAnnotation("Italy", "IT-LB", 11, 50),
+          lockdownAnnotation("Spain", "ES", 8),
+          lockdownAnnotation("France", "FR", 10),
+          lockdownAnnotation("United Kingdom", "UK", 11)
+        ]
       }
     }
   });

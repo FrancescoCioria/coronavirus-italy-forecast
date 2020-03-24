@@ -11,6 +11,7 @@ export type Data = {
 };
 
 export type Country =
+  | "Italy"
   | "China"
   | "United States"
   | "France"
@@ -19,7 +20,8 @@ export type Country =
   | "Netherlands"
   | "Germany"
   | "South Korea"
-  | "Iran";
+  | "Belgium"
+  | "Switzerland";
 
 export type CoronavirusDataCSV = {
   date: string;
@@ -161,5 +163,5 @@ export const getGlobalData = (): Promise<Array<Data & { country: Country }>> =>
           date: new Date(new Date(d.date).setHours(-5)).toISOString() // 🙈
         })),
         "date"
-      );
+      ).filter(v => v.country !== ("World" as Country));
     });

@@ -4,6 +4,10 @@ import { getData, Data } from "./data";
 import { createCompareGraph } from "./compare";
 import * as LMType from "ml-levenberg-marquardt";
 import * as queryString from "query-string";
+import groupBy = require("lodash/groupBy");
+import values = require("lodash/values");
+import flatten = require("lodash/flatten");
+import { Response, Country } from "./server";
 
 const LM = require("ml-levenberg-marquardt").default as typeof LMType;
 
@@ -278,68 +282,18 @@ const main = async () => {
     label: "Italia",
     data: data.italianData.filter(d => d.value > startNumberOfDeaths)
   };
-  const france = {
-    label: "Francia",
-    data: data.globalData.filter(
-      d => d.country === "France" && d.value > startNumberOfDeaths
-    )
-  };
-  const spain = {
-    label: "Spagna",
-    data: data.globalData.filter(
-      d => d.country === "Spain" && d.value > startNumberOfDeaths
-    )
-  };
-  const uk = {
-    label: "UK",
-    data: data.globalData.filter(
-      d => d.country === "United Kingdom" && d.value >= startNumberOfDeaths
-    )
-  };
-  const germany = {
-    label: "Germania",
-    data: data.globalData.filter(
-      d => d.country === "Germany" && d.value >= startNumberOfDeaths
-    )
-  };
-  const netherlands = {
-    label: "Olanda",
-    data: data.globalData.filter(
-      d => d.country === "Netherlands" && d.value >= startNumberOfDeaths
-    )
-  };
-  const southKorea = {
-    label: "Corea del Sud",
-    data: data.globalData.filter(
-      d => d.country === "South Korea" && d.value >= startNumberOfDeaths
-    )
-  };
-  const hubeiChina = {
-    label: "Cina",
-    data: data.globalData.filter(
-      d => d.country === "China" && d.value > startNumberOfDeaths
-    )
-  };
-  const iran = {
-    label: "Iran",
-    data: data.globalData.filter(
-      d => d.country === "Iran" && d.value > startNumberOfDeaths
-    )
-  };
-  const washingtonUS = {
-    label: "USA",
-    data: data.globalData.filter(
-      d => d.country === "United States" && d.value > startNumberOfDeaths
-    )
-  };
 
-  // regions
   const lombardy = {
     label: "Lombardia",
     data: data.regionalData.filter(
       d => d.region === "Lombardia" && d.value > startNumberOfDeaths
     )
   };
+
+  const getDataForCountry = (country: Country): Response["globalData"] =>
+    data.globalData.filter(
+      d => d.country === country && d.value > startNumberOfDeaths
+    );
 
   const updateChart = () => {
     chart && chart.destroy();
@@ -349,13 +303,13 @@ const main = async () => {
         case "italy":
           return italy.data;
         case "france":
-          return france.data;
+          return getDataForCountry("France");
         case "spain":
-          return spain.data;
+          return getDataForCountry("Spain");
         case "uk":
-          return uk.data;
+          return getDataForCountry("United Kingdom");
         case "netherlands":
-          return netherlands.data;
+          return getDataForCountry("Netherlands");
         // case "germany":
         //   return germany.data;
         case "lombardy":
@@ -384,18 +338,19 @@ const main = async () => {
 
   updateChart();
 
-  createCompareGraph([
-    italy,
-    france,
-    spain,
-    netherlands,
-    hubeiChina,
-    uk,
-    germany,
-    washingtonUS,
-    southKorea,
-    iran
-  ]);
+  const totalValue = (data: Data[]) =>
+    data.reduce((acc, v) => acc + v.value, 0);
+
+  createCompareGraph(
+    values(groupBy(data.globalData, "country"))
+      .map(countryData =>
+        countryData.filter(v => v.value >= startNumberOfDeaths)
+      )
+      .filter(countryData => countryData.length >= 3)
+      .sort((a, b) => {
+        return b[b.length - 1].value - a[a.length - 1].value;
+      })
+  );
 };
 
 main();

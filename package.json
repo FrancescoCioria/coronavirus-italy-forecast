@@ -17,6 +17,7 @@
     "@types/regression": "^2.0.0",
     "@types/webpack": "^4.41.7",
     "axios": "^0.19.2",
+    "chartjs-plugin-annotation": "^0.5.7",
     "cors": "^2.8.5",
     "csvtojson": "^2.0.10",
     "express": "^4.17.1",

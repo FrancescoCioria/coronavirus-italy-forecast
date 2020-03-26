@@ -115,103 +115,103 @@ const createGraph = (data: Array<Data>) => {
     // return { x: getLabels()[dataPoint[0] - 1], y: dataPoint[1] };
   };
 
-  const getChartDatasets = (): Chart.ChartDataSets[] => {
-    // regressions
-    const exponential = regression.exponential(
-      points.slice(0, getXPrediction())
-    );
-    const cubic = regression.polynomial(points.slice(0, getXPrediction()), {
-      order: 3
-    });
-    const quadratic = regression.polynomial(points.slice(0, getXPrediction()), {
-      order: 2
-    });
-    const asymmetricalSigmoidal = asymmetricalSigmoidalRegression(
-      points.slice(0, getXPrediction())
-    );
+  // regressions
+  const exponential = regression.exponential(points.slice(0, getXPrediction()));
+  const cubic = regression.polynomial(points.slice(0, getXPrediction()), {
+    order: 3
+  });
+  const quadratic = regression.polynomial(points.slice(0, getXPrediction()), {
+    order: 2
+  });
+  const asymmetricalSigmoidal = asymmetricalSigmoidalRegression(
+    points.slice(0, getXPrediction())
+  );
 
-    const getProjection = (
-      regression: regression.Result,
-      numberOfPoints: number
-    ): regression.DataPoint[] => {
-      return [...new Array(points.length + numberOfPoints)].map((_, i) => [
-        i + 1,
-        Math.round(regression.predict(i + 1)[1])
-      ]);
-    };
-
-    const getForecastRegressionLength = () =>
-      points.length - getXPrediction() + getForecast();
-
-    return [
-      {
-        label: "Nº morti ufficiale",
-        backgroundColor: "transparent",
-        borderColor: "#505050",
-        pointRadius: 1,
-        yAxisID: "y-axis",
-        data: points.map(chartDataFromPoints)
-      },
-      {
-        label: "Esponenziale",
-        backgroundColor: "transparent",
-        borderColor: "rgba(234, 67, 53, 1)",
-        borderDash: [10, 5],
-        borderWidth: 1,
-        pointRadius: 1,
-        yAxisID: "y-axis",
-        data: getProjection(exponential, getForecastRegressionLength()).map(
-          chartDataFromPoints
-        )
-      },
-      {
-        label: "Cubica",
-        backgroundColor: "transparent",
-        borderColor: "rgba(51, 168, 83, 1)",
-        borderDash: [10, 5],
-        borderWidth: 1,
-        pointRadius: 1,
-        yAxisID: "y-axis",
-        data: getProjection(cubic, getForecastRegressionLength()).map(
-          chartDataFromPoints
-        )
-      },
-      {
-        label: "Quadratica",
-        backgroundColor: "transparent",
-        borderColor: "rgba(66, 133, 244, 1)",
-        borderDash: [10, 5],
-        borderWidth: 1,
-        pointRadius: 1,
-        yAxisID: "y-axis",
-        data: getProjection(quadratic, getForecastRegressionLength()).map(
-          chartDataFromPoints
-        )
-      },
-      {
-        label: "Sigmoide asimmetrica (logistica)",
-        backgroundColor: "transparent",
-        borderColor: "rgb(251,188,3)",
-        borderDash: [10, 5],
-        borderWidth: 1,
-        pointRadius: 1,
-        yAxisID: "y-axis",
-        data: getProjection(
-          asymmetricalSigmoidal,
-          getForecastRegressionLength()
-        ).map(chartDataFromPoints)
-      }
-    ]
-      .filter(d => d.data.filter(y => y !== null).length > 1)
-      .reverse();
+  const getProjection = (
+    regression: regression.Result,
+    numberOfPoints: number
+  ): regression.DataPoint[] => {
+    return [...new Array(points.length + numberOfPoints)].map((_, i) => [
+      i + 1,
+      Math.round(regression.predict(i + 1)[1])
+    ]);
   };
 
-  const yMaxTemp = points[points.length - 1][1] * 10;
+  const getForecastRegressionLength = () =>
+    points.length - getXPrediction() + getForecast();
+
+  const datasets: Chart.ChartDataSets[] = [
+    {
+      label: "Nº morti ufficiale",
+      backgroundColor: "transparent",
+      borderColor: "#505050",
+      pointRadius: 1,
+      yAxisID: "y-axis",
+      data: points.map(chartDataFromPoints)
+    },
+    {
+      label: "Esponenziale",
+      backgroundColor: "transparent",
+      borderColor: "rgba(234, 67, 53, 1)",
+      borderDash: [10, 5],
+      borderWidth: 1,
+      pointRadius: 1,
+      yAxisID: "y-axis",
+      data: getProjection(exponential, getForecastRegressionLength()).map(
+        chartDataFromPoints
+      )
+    },
+    {
+      label: "Cubica",
+      backgroundColor: "transparent",
+      borderColor: "rgba(51, 168, 83, 1)",
+      borderDash: [10, 5],
+      borderWidth: 1,
+      pointRadius: 1,
+      yAxisID: "y-axis",
+      data: getProjection(cubic, getForecastRegressionLength()).map(
+        chartDataFromPoints
+      )
+    },
+    {
+      label: "Quadratica",
+      backgroundColor: "transparent",
+      borderColor: "rgba(66, 133, 244, 1)",
+      borderDash: [10, 5],
+      borderWidth: 1,
+      pointRadius: 1,
+      yAxisID: "y-axis",
+      data: getProjection(quadratic, getForecastRegressionLength()).map(
+        chartDataFromPoints
+      )
+    },
+    {
+      label: "Sigmoide asimmetrica (logistica)",
+      backgroundColor: "transparent",
+      borderColor: "rgb(251,188,3)",
+      borderDash: [10, 5],
+      borderWidth: 1,
+      pointRadius: 1,
+      yAxisID: "y-axis",
+      data: getProjection(
+        asymmetricalSigmoidal,
+        getForecastRegressionLength()
+      ).map(chartDataFromPoints)
+    }
+  ]
+    .filter(d => d.data.filter(y => y !== null).length > 1)
+    .reverse();
+
+  const cubicPoints = getProjection(cubic, getForecastRegressionLength()).map(
+    chartDataFromPoints
+  );
+
+  const yMaxTemp = cubicPoints[cubicPoints.length - 1] * 1.5;
 
   const yAxisMax =
     yMaxTemp < 10000
-      ? Math.round((points[points.length - 1][1] * 10) / 1000) * 1000
-      : Math.round((points[points.length - 1][1] * 10) / 10000) * 10000;
+      ? Math.round(yMaxTemp / 1000) * 1000
+      : Math.round(yMaxTemp / 10000) * 10000;
 
   const type = getHash().scale;
 
@@ -241,7 +241,7 @@ const createGraph = (data: Array<Data>) => {
     // The data for our dataset
     data: {
       labels: getLabels(),
-      datasets: getChartDatasets()
+      datasets
     },
 
     // Configuration options go here

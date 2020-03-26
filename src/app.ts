@@ -4,7 +4,7 @@ import { createCompareGraph } from "./compare";
 import groupBy = require("lodash/groupBy");
 import values = require("lodash/values");
 import { Response, Country, Data } from "./server";
-import { getHash } from "./hash";
+import { getHash, FilterCountry } from "./hash";
 import { updateCumulativeGraph } from "./cumulative";
 import { updateDailyGraph } from "./daily";
 
@@ -37,64 +37,46 @@ const main = async () => {
       d => d.country === country && d.value > startNumberOfDeaths
     );
 
+  const getFilteredData = (filter: FilterCountry): Data[] => {
+    switch (filter) {
+      case "italy":
+        return italy.data;
+      case "france":
+        return getDataForCountry("France");
+      case "spain":
+        return getDataForCountry("Spain");
+      case "uk":
+        return getDataForCountry("United Kingdom");
+      case "netherlands":
+        return getDataForCountry("Netherlands");
+      case "germany":
+        return getDataForCountry("Germany");
+      case "usa":
+        return getDataForCountry("United States");
+      case "lombardy":
+        return lombardy.data;
+    }
+  };
+
   // CUMULATIVE
   const updateCumulativeChart = () => {
-    const filteredData = ((): Data[] => {
-      switch (getHash().filter) {
-        case "italy":
-          return italy.data;
-        case "france":
-          return getDataForCountry("France");
-        case "spain":
-          return getDataForCountry("Spain");
-        case "uk":
-          return getDataForCountry("United Kingdom");
-        case "netherlands":
-          return getDataForCountry("Netherlands");
-        // case "germany":
-        //   return germany.data;
-        case "lombardy":
-          return lombardy.data;
-      }
-    })()!;
-
+    const filteredData = getFilteredData(getHash().filterCumulative);
     updateCumulativeGraph(filteredData);
   };
 
   sliderElement.addEventListener("input", updateCumulativeChart);
-
-  window.onhashchange = () => {
-    updateCumulativeChart();
-  };
 
   updateCumulativeChart();
 
   // DAILY
 
   const updateDailyChart = () => {
-    const filteredData = ((): Data[] => {
-      switch (getHash().filterDaily) {
-        case "italy":
-          return italy.data;
-        case "france":
-          return getDataForCountry("France");
-        case "spain":
-          return getDataForCountry("Spain");
-        case "uk":
-          return getDataForCountry("United Kingdom");
-        case "netherlands":
-          return getDataForCountry("Netherlands");
-        // case "germany":
-        //   return germany.data;
-        case "lombardy":
-          return lombardy.data;
-      }
-    })()!;
-
+    const filteredData = getFilteredData(getHash().filterDaily);
     updateDailyGraph(filteredData);
   };
 
   window.onhashchange = () => {
+    updateCumulativeChart();
     updateDailyChart();
   };
 

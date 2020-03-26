@@ -204,7 +204,7 @@ export const updateCumulativeGraph = (data: Array<Data>) => {
   const type = getHash().scale;
 
   const lockdownDay = ((): number | null => {
-    switch (getHash().filter) {
+    switch (getHash().filterCumulative) {
       case "italy":
         return 13;
       case "france":

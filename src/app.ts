@@ -1,322 +1,22 @@
-import * as regression from "regression";
 import * as Chart from "chart.js";
-import { getData, Data } from "./data";
+import { getData } from "./data";
 import { createCompareGraph } from "./compare";
-import * as LMType from "ml-levenberg-marquardt";
-import * as queryString from "query-string";
 import groupBy = require("lodash/groupBy");
 import values = require("lodash/values");
-import flatten = require("lodash/flatten");
-import { Response, Country } from "./server";
-
-const LM = require("ml-levenberg-marquardt").default as typeof LMType;
+import { Response, Country, Data } from "./server";
+import { getHash } from "./hash";
+import { updateCumulativeGraph } from "./cumulative";
+import { updateDailyGraph } from "./daily";
 
 Chart.defaults.global.animation!.duration = 0;
 
-const asymmetricalSigmoidalRegression = (
-  points: regression.DataPoint[]
-): regression.Result => {
-  const asymmetricalSigmoidalFunction = ([a, b, c, d, m]: number[]) => (
-    x: number
-  ): number => d + (a - d) / Math.pow(1 + Math.pow(x / c, b), m);
-
-  const asymmetricalSigmoidalParameters = LM(
-    {
-      x: points.slice(0, getXPrediction()).map(p => p[0]),
-      y: points.slice(0, getXPrediction()).map(p => p[1])
-    },
-    asymmetricalSigmoidalFunction,
-    {
-      initialValues: [34.50764, 4.134764, 744.5857, 2549.07, 5114272],
-      damping: 1,
-      maxIterations: 1000,
-      minValues: [
-        Number.MIN_SAFE_INTEGER,
-        Number.MIN_SAFE_INTEGER,
-        700,
-        Number.MIN_SAFE_INTEGER,
-        Number.MIN_SAFE_INTEGER
-      ]
-    } as any
-  ).parameterValues;
-
-  return {
-    predict: (x: number): regression.DataPoint => [
-      x,
-      asymmetricalSigmoidalFunction(asymmetricalSigmoidalParameters)(x)
-    ]
-  } as regression.Result;
-};
-
-const chartElement = document.getElementById("chart") as HTMLCanvasElement;
-const ctx = chartElement.getContext("2d")!;
-
-const forecastElement = document.getElementById("forecast") as HTMLInputElement;
 const sliderElement = document.getElementById("slider") as HTMLInputElement;
-const filterElement = document.getElementById("filter") as HTMLSelectElement;
-const scaleElement = document.getElementById("scale") as HTMLSelectElement;
 
-forecastElement.value = String(3);
-sliderElement.setAttribute("min", "1");
-
-const updateUrlHash = (): void => {
-  const query = {
-    // slider: sliderElement.value,
-    filter: filterElement.value,
-    scale: scaleElement.value,
-    forecast: parseInt(forecastElement.value)
-  };
-
-  location.hash = queryString.stringify(query);
-};
-
-const getHash = (): {
-  filter: "italy" | "france" | "spain" | "uk" | "netherlands" | "lombardy";
-  scale: "linear" | "logarithmic";
-  forecast: number;
-} => {
-  return queryString.parse(location.hash, { parseNumbers: true }) as any;
-};
-
-if (window.location.hash.length === 0) {
-  updateUrlHash();
-} else {
-  const hash = getHash();
-  forecastElement.value = String(hash.forecast);
-  filterElement.value = hash.filter;
-  scaleElement.value = hash.scale;
-}
-
-filterElement.addEventListener("change", updateUrlHash);
-scaleElement.addEventListener("change", updateUrlHash);
-forecastElement.addEventListener("change", updateUrlHash);
-
-const getForecast = (): number => getHash().forecast;
-const getXPrediction = (): number => parseInt(sliderElement.value);
-
-const createGraph = (data: Array<Data>) => {
-  const points: regression.DataPoint[] = data.map((d, i) => [i + 1, d.value]);
-
-  const getLabels = () => {
-    return [...new Array(points.length + getForecast())].map((_, i) => {
-      const firstDate = new Date(data[0].date.slice(0, 10));
-      firstDate.setDate(firstDate.getDate() + i);
-
-      const currentDate = firstDate;
-
-      return `${currentDate.getDate()} ${currentDate.toLocaleString("default", {
-        month: "short"
-      })}`;
-    });
-  };
-
-  const chartDataFromPoints = (dataPoint: regression.DataPoint): number => {
-    return dataPoint[1];
-    // return { x: getLabels()[dataPoint[0] - 1], y: dataPoint[1] };
-  };
-
-  // regressions
-  const exponential = regression.exponential(points.slice(0, getXPrediction()));
-  const cubic = regression.polynomial(points.slice(0, getXPrediction()), {
-    order: 3
-  });
-  const quadratic = regression.polynomial(points.slice(0, getXPrediction()), {
-    order: 2
-  });
-  const asymmetricalSigmoidal = asymmetricalSigmoidalRegression(
-    points.slice(0, getXPrediction())
-  );
-
-  const getProjection = (
-    regression: regression.Result,
-    numberOfPoints: number
-  ): regression.DataPoint[] => {
-    return [...new Array(points.length + numberOfPoints)].map((_, i) => [
-      i + 1,
-      Math.round(regression.predict(i + 1)[1])
-    ]);
-  };
-
-  const getForecastRegressionLength = () =>
-    points.length - getXPrediction() + getForecast();
-
-  const datasets: Chart.ChartDataSets[] = [
-    {
-      label: "Nº morti ufficiale",
-      backgroundColor: "transparent",
-      borderColor: "#505050",
-      pointRadius: 1,
-      yAxisID: "y-axis",
-      data: points.map(chartDataFromPoints)
-    },
-    {
-      label: "Esponenziale",
-      backgroundColor: "transparent",
-      borderColor: "rgba(234, 67, 53, 1)",
-      borderDash: [10, 5],
-      borderWidth: 1,
-      pointRadius: 1,
-      yAxisID: "y-axis",
-      data: getProjection(exponential, getForecastRegressionLength()).map(
-        chartDataFromPoints
-      )
-    },
-    {
-      label: "Cubica",
-      backgroundColor: "transparent",
-      borderColor: "rgba(51, 168, 83, 1)",
-      borderDash: [10, 5],
-      borderWidth: 1,
-      pointRadius: 1,
-      yAxisID: "y-axis",
-      data: getProjection(cubic, getForecastRegressionLength()).map(
-        chartDataFromPoints
-      )
-    },
-    {
-      label: "Quadratica",
-      backgroundColor: "transparent",
-      borderColor: "rgba(66, 133, 244, 1)",
-      borderDash: [10, 5],
-      borderWidth: 1,
-      pointRadius: 1,
-      yAxisID: "y-axis",
-      data: getProjection(quadratic, getForecastRegressionLength()).map(
-        chartDataFromPoints
-      )
-    },
-    {
-      label: "Sigmoide asimmetrica (logistica)",
-      backgroundColor: "transparent",
-      borderColor: "rgb(251,188,3)",
-      borderDash: [10, 5],
-      borderWidth: 1,
-      pointRadius: 1,
-      yAxisID: "y-axis",
-      data: getProjection(
-        asymmetricalSigmoidal,
-        getForecastRegressionLength()
-      ).map(chartDataFromPoints)
-    }
-  ]
-    .filter(d => d.data.filter(y => y !== null).length > 1)
-    .reverse();
-
-  const cubicPoints = getProjection(cubic, getForecastRegressionLength()).map(
-    chartDataFromPoints
-  );
-
-  const yMaxTemp = cubicPoints[cubicPoints.length - 1] * 1.5;
-
-  const yAxisMax =
-    yMaxTemp < 10000
-      ? Math.round(yMaxTemp / 1000) * 1000
-      : Math.round(yMaxTemp / 10000) * 10000;
-
-  const type = getHash().scale;
-
-  const lockdownDay = ((): number | null => {
-    switch (getHash().filter) {
-      case "italy":
-        return 13;
-      case "france":
-        return 10;
-      case "spain":
-        return 8;
-      case "uk":
-        return 11;
-      case "lombardy":
-        return 10;
-      default:
-        return null;
-    }
-  })();
-
-  const chart = new Chart(ctx, {
-    // The type of chart we want to create
-    type: "line",
-
-    plugins: [],
-
-    // The data for our dataset
-    data: {
-      labels: getLabels(),
-      datasets
-    },
-
-    // Configuration options go here
-    options: {
-      tooltips: {
-        mode: "x",
-        intersect: false,
-        position: "nearest"
-      },
-      scales: {
-        yAxes: [
-          {
-            id: "y-axis",
-            type,
-            ticks:
-              type === "linear"
-                ? {
-                    max:
-                      yAxisMax < 200
-                        ? Math.floor(yAxisMax / 20) * 20
-                        : yAxisMax < 1000
-                        ? Math.floor(yAxisMax / 50) * 50
-                        : Math.floor(yAxisMax / 500) * 500,
-                    min: 0
-                  }
-                : {
-                    max: 100000,
-                    min: 10,
-                    callback: value => {
-                      return Math.log10(value) % 1 === 0
-                        ? Number(value.toString())
-                        : (null as any);
-                    }
-                  }
-          }
-        ]
-      },
-      elements: {
-        line: {
-          tension: 0
-        }
-      },
-      ["annotation" as any]: {
-        annotations:
-          lockdownDay !== null
-            ? [
-                {
-                  id: `vline$`,
-                  type: "line",
-                  mode: "vertical",
-                  scaleID: "x-axis-0",
-                  value: lockdownDay - 1,
-                  borderColor: "#505050",
-                  borderWidth: 1,
-                  label: {
-                    backgroundColor: "#505050",
-                    content: "Lockdown",
-                    enabled: true,
-                    position: "top",
-                    yAdjust: 10
-                  }
-                }
-              ]
-            : []
-      }
-    }
-  });
-
-  return chart;
-};
+let cumulativeChart: Chart | null = null;
+let dailyChart: Chart | null = null;
 
 const main = async () => {
   const data = await getData();
-
-  let chart: Chart | null = null;
 
   const startNumberOfDeaths = 15;
 
@@ -337,9 +37,8 @@ const main = async () => {
       d => d.country === country && d.value > startNumberOfDeaths
     );
 
-  const updateChart = () => {
-    chart && chart.destroy();
-
+  // CUMULATIVE
+  const updateCumulativeChart = () => {
     const filteredData = ((): Data[] => {
       switch (getHash().filter) {
         case "italy":
@@ -359,29 +58,49 @@ const main = async () => {
       }
     })()!;
 
-    sliderElement.setAttribute("value", String(filteredData.length));
-    sliderElement.setAttribute("max", String(filteredData.length));
-
-    if (getXPrediction() > filteredData.length) {
-      sliderElement.setAttribute("value", String(filteredData.length));
-    }
-
-    sliderElement.style.width = `${78.9 *
-      (filteredData.length / (filteredData.length + getForecast()))}%`;
-
-    chart = createGraph(filteredData);
+    updateCumulativeGraph(filteredData);
   };
 
-  sliderElement.addEventListener("input", updateChart);
+  sliderElement.addEventListener("input", updateCumulativeChart);
 
   window.onhashchange = () => {
-    updateChart();
+    updateCumulativeChart();
   };
 
-  updateChart();
+  updateCumulativeChart();
 
-  const totalValue = (data: Data[]) =>
-    data.reduce((acc, v) => acc + v.value, 0);
+  // DAILY
+
+  const updateDailyChart = () => {
+    const filteredData = ((): Data[] => {
+      switch (getHash().filterDaily) {
+        case "italy":
+          return italy.data;
+        case "france":
+          return getDataForCountry("France");
+        case "spain":
+          return getDataForCountry("Spain");
+        case "uk":
+          return getDataForCountry("United Kingdom");
+        case "netherlands":
+          return getDataForCountry("Netherlands");
+        // case "germany":
+        //   return germany.data;
+        case "lombardy":
+          return lombardy.data;
+      }
+    })()!;
+
+    updateDailyGraph(filteredData);
+  };
+
+  window.onhashchange = () => {
+    updateDailyChart();
+  };
+
+  updateDailyChart();
+
+  // COMPARE
 
   createCompareGraph(
     values(groupBy(data.globalData, "country"))

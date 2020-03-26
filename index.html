@@ -2,9 +2,9 @@
   <link rel="stylesheet" href="main.css" />
 </head>
 <body>
-  <div id="chart-wrapper">
+  <div id="chart-wrapper-cumulative">
     <h3>Previsione andamento morti</h3>
-    <canvas id="chart"></canvas>
+    <canvas id="chart-cumulative"></canvas>
   </div>
 
   <div id="inputs-wrapper">
@@ -33,6 +33,27 @@
         <select id="scale">
           <option value="linear">Lineare</option>
           <option value="logarithmic">Logaritmica</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="chart-wrapper-daily">
+    <h3>Andamento morti per giorno</h3>
+    <canvas id="chart-daily"></canvas>
+  </div>
+
+  <div id="inputs-wrapper-daily">
+    <div style="display: flex;">
+      <div class="input-wrapper">
+        <div class="label">Filtra i dati per:</div>
+        <select id="filter-daily">
+          <option value="italy">Italia</option>
+          <option value="france">Francia</option>
+          <option value="spain">Spagna</option>
+          <option value="uk">UK</option>
+          <option value="netherlands">Olanda</option>
+          <option value="lombardy">Lombardia</option>
         </select>
       </div>
     </div>

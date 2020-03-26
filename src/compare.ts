@@ -2,8 +2,6 @@ import * as Chart from "chart.js";
 import { Response, Country } from "./server";
 const annotationPlugin = require("chartjs-plugin-annotation");
 
-Chart.defaults.global.animation!.duration = 0;
-
 const chartElement = document.getElementById(
   "chart-compare"
 ) as HTMLCanvasElement;
@@ -60,7 +58,7 @@ const lockdownAnnotation = (
 });
 
 export const createCompareGraph = (data: Response["globalData"][]) => {
-  const chart = new Chart(ctx, {
+  new Chart(ctx, {
     type: "line",
 
     plugins: [annotationPlugin],
@@ -126,6 +124,4 @@ export const createCompareGraph = (data: Response["globalData"][]) => {
       }
     }
   });
-
-  return chart;
 };

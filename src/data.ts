@@ -5,11 +5,6 @@ import {
   getGlobalData
 } from "./server";
 
-export type Data = {
-  date: string;
-  value: number;
-};
-
 export const getData = async (): Promise<Response> => {
   const [italianData, regionalData, globalData] = await Promise.all<
     Response["italianData"],

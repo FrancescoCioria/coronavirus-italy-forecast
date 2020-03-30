@@ -29,6 +29,10 @@ body {
   margin: auto;
 }
 
+#chart-compare {
+  height: 100vh;
+}
+
 body {
   padding-top: 24px;
   padding-bottom: 80px;

@@ -86,6 +86,8 @@ export const createCompareGraph = (data: Response["globalData"][]) => {
     },
 
     options: {
+      // responsive: false,
+      maintainAspectRatio: false,
       tooltips: {
         mode: "x",
         intersect: false,

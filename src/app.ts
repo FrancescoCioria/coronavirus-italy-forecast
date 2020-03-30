@@ -8,12 +8,11 @@ import { getHash, FilterCountry } from "./hash";
 import { updateCumulativeGraph } from "./cumulative";
 import { updateDailyGraph } from "./daily";
 
+require("chartjs-plugin-draggable/src");
+require("chartjs-plugin-annotation");
+require("chartjs-plugin-zoom");
+
 Chart.defaults.global.animation!.duration = 0;
-
-const sliderElement = document.getElementById("slider") as HTMLInputElement;
-
-let cumulativeChart: Chart | null = null;
-let dailyChart: Chart | null = null;
 
 const main = async () => {
   const data = await getData();
@@ -63,8 +62,6 @@ const main = async () => {
     const filteredData = getFilteredData(getHash().filterCumulative);
     updateCumulativeGraph(filteredData);
   };
-
-  sliderElement.addEventListener("input", updateCumulativeChart);
 
   updateCumulativeChart();
 

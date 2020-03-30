@@ -5,6 +5,9 @@ import * as LMType from "ml-levenberg-marquardt";
 import { getHash } from "./hash";
 
 const annotationPlugin = require("chartjs-plugin-annotation");
+const zoomPlugin = require("chartjs-plugin-zoom");
+const draggablePlugin = require("chartjs-plugin-draggable/src").default;
+
 const LM = require("ml-levenberg-marquardt").default as typeof LMType;
 
 const chartElement = document.getElementById(
@@ -15,7 +18,7 @@ const ctx = chartElement.getContext("2d")!;
 const chart = new Chart(ctx, {
   type: "line",
 
-  plugins: [annotationPlugin],
+  plugins: [annotationPlugin, zoomPlugin, draggablePlugin],
 
   options: {
     tooltips: {
@@ -26,6 +29,18 @@ const chart = new Chart(ctx, {
     elements: {
       line: {
         tension: 0
+      }
+    },
+    plugins: {
+      zoom: {
+        pan: {
+          enabled: false,
+          mode: "x"
+        },
+        zoom: {
+          enabled: false,
+          mode: "x"
+        }
       }
     }
   }
@@ -66,24 +81,27 @@ const asymmetricalSigmoidalRegression = (
   } as regression.Result;
 };
 
-const sliderElement = document.getElementById("slider") as HTMLInputElement;
-sliderElement.setAttribute("min", "1");
+// const getXAxisRange = (): { min: string; max: string } => {
+//   return {
+//     min: chart.config.options?.scales?.xAxes![0].ticks?.min,
+//     max: chart.config.options?.scales?.xAxes![0].ticks?.max
+//   };
+// };
+
+let sliderValue: null | number = null;
 
 const getForecast = (): number => getHash().forecast;
-const getXPrediction = (): number => parseInt(sliderElement.value);
+const getXPrediction = (): number => (sliderValue || 0) + 1;
 
 export const updateCumulativeGraph = (data: Array<Data>) => {
-  sliderElement.setAttribute("value", String(data.length));
-  sliderElement.setAttribute("max", String(data.length));
-
-  if (getXPrediction() > data.length) {
-    sliderElement.setAttribute("value", String(data.length));
+  if (sliderValue === null || sliderValue > data.length) {
+    sliderValue = data.length - 1;
   }
 
   const points: regression.DataPoint[] = data.map((d, i) => [i + 1, d.value]);
 
   const getLabels = () => {
-    return [...new Array(points.length + getForecast())].map((_, i) => {
+    return [...new Array(data.length + getForecast())].map((_, i) => {
       const firstDate = new Date(data[0].date.slice(0, 10));
       firstDate.setDate(firstDate.getDate() + i);
 
@@ -192,10 +210,6 @@ export const updateCumulativeGraph = (data: Array<Data>) => {
 
   const yMaxTemp = cubicPoints[cubicPoints.length - 1] * 1.5;
 
-  const percentage = data.length / (data.length + getForecast());
-  const offset = yMaxTemp > 100000 ? 50 : yMaxTemp > 10000 ? 40 : 50;
-  sliderElement.style.width = `calc(${percentage} * (70vw - ${offset}px))`;
-
   const yAxisMax =
     yMaxTemp < 10000
       ? Math.round(yMaxTemp / 1000) * 1000
@@ -220,12 +234,24 @@ export const updateCumulativeGraph = (data: Array<Data>) => {
     }
   })();
 
+  const labels = getLabels();
+
   chart.data = {
-    labels: getLabels(),
+    labels,
     datasets
   };
 
   chart.options.scales = {
+    // xAxes: [
+    //   {
+    //     id: "x-axis-0",
+    //     ticks: {
+    //       min:
+    //         getXAxisRange().min ||
+    //         labels[Math.floor(Math.min(data.length / 2, data.length - 10))]
+    //     }
+    //   }
+    // ],
     yAxes: [
       {
         id: "y-axis",
@@ -254,10 +280,37 @@ export const updateCumulativeGraph = (data: Array<Data>) => {
     ]
   };
 
+  const draggableAnnotation = {
+    id: "slider" + Math.random(),
+    type: "line",
+    mode: "vertical",
+    scaleID: "x-axis-0",
+    value: sliderValue,
+    borderColor: "gray",
+    borderWidth: 2,
+    xMin: 1,
+    // xMax: data.length - chart.options.scales.xAxes![0].ticks!.min,
+    draggable: true,
+    onDragEnd: (event: any) => {
+      sliderValue = event.subject.config.value;
+      updateCumulativeGraph(data);
+    },
+    label: {
+      backgroundColor: "gray",
+      content: "Forecast",
+      enabled: true,
+      position: "top",
+      yAdjust: 10
+    }
+  };
+
   chart.options["annotation" as keyof Chart.ChartOptions] = {
+    drawTime: "afterDraw",
+    events: ["click"],
     annotations:
       lockdownDay !== null
         ? [
+            draggableAnnotation,
             {
               id: `vline$`,
               type: "line",
@@ -275,7 +328,7 @@ export const updateCumulativeGraph = (data: Array<Data>) => {
               }
             }
           ]
-        : []
+        : [draggableAnnotation]
   } as any;
 
   chart.update({ duration: 0 });

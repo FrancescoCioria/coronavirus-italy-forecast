@@ -80,7 +80,23 @@ export const createCompareGraph = (data: Response["globalData"][]) => {
           borderWidth: i === 0 ? 2 : 1,
           yAxisID: "y-axis",
           data: d.map(p => p.value),
-          hidden: !translateCountryToItalian[country]
+          hidden: ((): boolean => {
+            switch (country) {
+              case "Belgium":
+              case "France":
+              case "Germany":
+              case "Italy":
+              case "Netherlands":
+              case "Spain":
+              case "United States":
+              case "United Kingdom":
+              case "China":
+                return false;
+
+              default:
+                return true;
+            }
+          })()
         };
       })
     },
